@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Abrox Comments Widget</title>
+
+<!-- CSS -->
+<link rel="stylesheet" href="widget.css">
+
+</head>
+<body>
+
+<div id="tg-comments-app">
+
+    <!-- Background Layer -->
+    <div class="tg-bg-layer"></div>
+
+    <!-- Header -->
+    <div class="tg-header">
+        <!-- Back Arrow -->
+        <button class="tg-back-btn" aria-label="Back">
+            <i data-lucide="arrow-left"></i>
+        </button>
+
+        <!-- Group Title -->
+        <span class="tg-comment-count" id="tg-comment-count"><strong>🌐 Profit Hunters Chat</strong></span>
+
+        <!-- Options / 3-dot menu -->
+        <button class="tg-options-btn" aria-label="Options">
+            <i data-lucide="more-vertical"></i>
+        </button>
+    </div>
+
+    <!-- Pin Banner / System Message -->
+    <div id="tg-pin-banner" class="tg-pin-banner hidden">
+        <i data-lucide="pin"></i>
+        <span id="tg-pin-text">Pinned message: Welcome to Profit Hunters Chat!</span>
+        <button id="tg-pin-action" class="tg-pin-action">Go</button>
+    </div>
+
+    <!-- Post Preview (system message) -->
+    <div id="tg-post-preview" class="tg-post-preview">
+        Loading latest community activity...
+    </div>
+
+    <!-- Scrollable Comments Container -->
+    <div id="tg-comments-container"></div>
+
+    <!-- New Comments Notification -->
+    <div id="tg-new-comments" class="hidden">↓ New comments</div>
+
+    <!-- Telegram-style Floating Input Bar -->
+    <div class="tg-input-wrapper">
+        <div class="tg-input-bar">
+            <!-- Left: Emoji -->
+            <button class="tg-icon-btn" data-type="emoji" aria-label="Emoji picker">
+                <i data-lucide="smile"></i>
+            </button>
+
+            <!-- Input Field -->
+            <input type="text" id="tg-comment-input" placeholder="Write a comment..." autocomplete="off">
+
+            <!-- Send Button -->
+            <button id="tg-send-btn" class="tg-send-btn" aria-label="Send message">
+                <i data-lucide="send"></i>
+            </button>
+
+            <!-- Right: Media / Camera Buttons -->
+            <div class="tg-right-buttons">
+                <button class="tg-icon-btn" data-type="media" aria-label="Upload media">
+                    <i data-lucide="camera"></i>
+                </button>
+                <button class="tg-icon-btn" data-type="other-media" aria-label="Other media">
+                    <i data-lucide="image"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>lucide.createIcons();</script>
+
+<!-- Modular Scripts -->
+<script src="identity-personas.js"></script>
+<script src="bubble-renderer.js"></script>
+<script src="realism-engine-v11.js"></script>
+<script src="interactions.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
