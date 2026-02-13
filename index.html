@@ -1,95 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Abrox Comments Widget</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Abrox – Profit Hunters Chat</title>
 
-<!-- CSS -->
-<link rel="stylesheet" href="widget.css">
-
+  <!-- CSS -->
+  <link rel="stylesheet" href="widget.css" />
 </head>
 <body>
 
-<div id="tg-comments-app">
+  <div id="tg-comments-app">
 
     <!-- Background Layer -->
-    <div class="tg-bg-layer"></div>
+    <div class="tg-bg-layer" aria-hidden="true"></div>
 
     <!-- Header -->
-    <div class="tg-header">
-        <!-- Back Arrow -->
-        <button class="tg-back-btn" aria-label="Back">
-            <i data-lucide="arrow-left"></i>
-        </button>
+    <header class="tg-header" role="banner">
+      <!-- Back Arrow -->
+      <button class="tg-back-btn" aria-label="Back">
+        <i data-lucide="arrow-left"></i>
+      </button>
 
-        <!-- Group Title -->
-        <span class="tg-comment-count" id="tg-comment-count"><strong>🌐 Profit Hunters Chat</strong></span>
+      <!-- Logo + Title + Meta -->
+      <div class="tg-header-center">
+        <img src="assets/logo.jpg" alt="Profit Hunters Logo" class="tg-header-logo" />
+        <div class="tg-header-text">
+          <div class="tg-title">🌐 Profit Hunters Chat</div>
+          <div class="tg-group-meta" id="tg-group-meta">Created March 2025 · <span id="tg-member-count">1,284 members</span> · <span id="tg-online-count">128 online</span></div>
+        </div>
+      </div>
 
-        <!-- Options / 3-dot menu -->
-        <button class="tg-options-btn" aria-label="Options">
-            <i data-lucide="more-vertical"></i>
-        </button>
-    </div>
+      <!-- Options / 3-dot menu -->
+      <button class="tg-options-btn" aria-label="Options">
+        <i data-lucide="more-vertical"></i>
+      </button>
+    </header>
 
-    <!-- Pin Banner / System Message -->
-    <div id="tg-pin-banner" class="tg-pin-banner hidden">
-        <i data-lucide="pin"></i>
-        <span id="tg-pin-text">Pinned message: Welcome to Profit Hunters Chat!</span>
-        <button id="tg-pin-action" class="tg-pin-action">Go</button>
-    </div>
+    <!-- Pin Banner (dynamically populated by interactions.js) -->
+    <div id="tg-pin-banner" class="tg-pin-banner hidden" role="region" aria-live="polite"></div>
 
-    <!-- Post Preview (system message) -->
-    <div id="tg-post-preview" class="tg-post-preview">
-        Loading latest community activity...
-    </div>
+    <!-- Post Preview / System message (optional) -->
+    <div id="tg-post-preview" class="tg-post-preview" aria-hidden="false">Loading latest community activity...</div>
 
     <!-- Scrollable Comments Container -->
-    <div id="tg-comments-container"></div>
+    <main id="tg-comments-container" class="tg-comments-container" role="feed" aria-live="off"></main>
 
     <!-- New Comments Notification -->
-    <div id="tg-new-comments" class="hidden">↓ New comments</div>
+    <button id="tg-new-comments" class="hidden tg-new-comments" aria-hidden="true">↓ New comments</button>
 
     <!-- Telegram-style Floating Input Bar -->
-    <div class="tg-input-wrapper">
-        <div class="tg-input-bar">
-            <!-- Left: Emoji -->
-            <button class="tg-icon-btn" data-type="emoji" aria-label="Emoji picker">
-                <i data-lucide="smile"></i>
-            </button>
+    <div class="tg-input-wrapper" role="form" aria-label="Send a message">
+      <div class="tg-input-bar">
+        <!-- Left: Emoji -->
+        <button class="tg-icon-btn" data-type="emoji" aria-label="Emoji picker">
+          <i data-lucide="smile"></i>
+        </button>
 
-            <!-- Input Field -->
-            <input type="text" id="tg-comment-input" placeholder="Write a comment..." autocomplete="off">
+        <!-- Input Field -->
+        <input type="text" id="tg-comment-input" placeholder="Write a comment..." autocomplete="off" aria-label="Write a comment" />
 
-            <!-- Send Button -->
-            <button id="tg-send-btn" class="tg-send-btn" aria-label="Send message">
-                <i data-lucide="send"></i>
-            </button>
+        <!-- Send Button (hidden until text) -->
+        <button id="tg-send-btn" class="tg-send-btn" aria-label="Send message">
+          <i data-lucide="send"></i>
+        </button>
 
-            <!-- Right: Media / Camera Buttons -->
-            <div class="tg-right-buttons">
-                <button class="tg-icon-btn" data-type="media" aria-label="Upload media">
-                    <i data-lucide="camera"></i>
-                </button>
-                <button class="tg-icon-btn" data-type="other-media" aria-label="Other media">
-                    <i data-lucide="image"></i>
-                </button>
-            </div>
+        <!-- Right: Media / Camera Buttons -->
+        <div class="tg-right-buttons" aria-hidden="false">
+          <button class="tg-icon-btn" data-type="media" aria-label="Upload media">
+            <i data-lucide="camera"></i>
+          </button>
+          <button class="tg-icon-btn" data-type="other-media" aria-label="Other media">
+            <i data-lucide="image"></i>
+          </button>
         </div>
+      </div>
     </div>
 
-</div>
+  </div>
 
-<!-- Lucide Icons -->
-<script src="https://unpkg.com/lucide@latest"></script>
-<script>lucide.createIcons();</script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>lucide.createIcons();</script>
 
-<!-- Modular Scripts -->
-<script src="identity-personas.js"></script>
-<script src="bubble-renderer.js"></script>
-<script src="realism-engine-v11.js"></script>
-<script src="interactions.js"></script>
-<script src="app.js"></script>
+  <!-- JS modules (load order matters) -->
+  <script src="identity-personas.js"></script>
+  <script src="bubble-renderer.js"></script>
+  <script src="realism-engine-v11.js"></script>
+  <script src="interactions.js"></script>
+  <script src="app.js"></script>
 
 </body>
 </html>
