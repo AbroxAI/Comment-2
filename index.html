@@ -8,16 +8,42 @@
   <!-- CSS -->
   <link rel="stylesheet" href="widget.css" />
   <style>
-    /* Telegram-accurate header styling */
+    /* --- Telegram-accurate header --- */
+    .tg-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+      padding: 0 12px;
+      background-color: #fff;
+      border-bottom: 1px solid #e5e5e5;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .tg-back-btn,
+    .tg-options-btn {
+      background: none;
+      border: none;
+      display: flex;
+      align-items: center;
+      font-size: 20px;
+      color: #555;
+      cursor: pointer;
+    }
+
     .tg-header-center {
       display: flex;
       align-items: center;
-      gap: 8px; /* compact spacing between avatar and text */
+      gap: 10px;
+      flex: 1;
+      margin: 0 12px;
     }
 
     .tg-header-avatar {
-      width: 36px;
-      height: 36px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       object-fit: cover;
     }
@@ -25,6 +51,7 @@
     .tg-header-info {
       display: flex;
       flex-direction: column;
+      justify-content: center;
     }
 
     .tg-title {
@@ -35,11 +62,65 @@
     }
 
     .tg-meta {
-      font-size: 13px;
-      font-weight: 400;
-      color: #929292;
+      font-size: 12px;
+      color: #888;
       line-height: 1.2;
-      margin-top: 2px;
+    }
+
+    /* --- Input bar --- */
+    .tg-input-wrapper {
+      position: sticky;
+      bottom: 0;
+      background: #fff;
+      border-top: 1px solid #e5e5e5;
+      padding: 8px 12px;
+      z-index: 5;
+    }
+
+    .tg-input-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tg-icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      color: #555;
+    }
+
+    .tg-comment-input {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+
+    .tg-send-btn {
+      background: #0088ff;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* --- Pin banner --- */
+    .tg-pin-banner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: #f5f5f5;
+      border-left: 3px solid #0088ff;
+      font-size: 13px;
     }
   </style>
 </head>
@@ -50,69 +131,60 @@
     <!-- Background Layer -->
     <div class="tg-bg-layer" aria-hidden="true"></div>
 
-    <!-- Header (Telegram-accurate) -->
+    <!-- Header -->
     <header class="tg-header" role="banner">
-      <!-- Back Arrow -->
       <button class="tg-back-btn" aria-label="Back">
         <i data-lucide="arrow-left"></i>
       </button>
 
-      <!-- Center: Avatar + Title + Meta -->
       <div class="tg-header-center">
-        <!-- Group Avatar / Logo -->
         <img src="assets/logo.jpg" alt="Profit Hunters Logo" class="tg-header-avatar" />
-
-        <!-- Title + Member Info -->
         <div class="tg-header-info">
           <div class="tg-title">🌐 Profit Hunters Chat</div>
           <div class="tg-meta">
-            <span id="tg-member-count">1,284 members</span> · 
-            <span id="tg-online-count">128 online</span>
+            <span id="tg-member-count">1,284 members</span> · <span id="tg-online-count">128 online</span>
           </div>
         </div>
       </div>
 
-      <!-- Options Menu -->
       <button class="tg-options-btn" aria-label="Options">
         <i data-lucide="more-vertical"></i>
       </button>
     </header>
 
-    <!-- Pin Banner (populated dynamically by interactions.js after admin pins broadcast) -->
-    <div id="tg-pin-banner" class="tg-pin-banner hidden" role="region" aria-live="polite"></div>
+    <!-- Pin Banner -->
+    <div id="tg-pin-banner" class="tg-pin-banner hidden" role="region" aria-live="polite">
+      <!-- Sticker -> transforms into full banner via interactions.js -->
+    </div>
 
     <!-- Post Preview / System message -->
     <div id="tg-post-preview" class="tg-post-preview" aria-hidden="false">
-      <!-- Shows latest chat from history -->
+      <!-- Latest chat history shown here -->
     </div>
 
-    <!-- Scrollable Comments Container -->
+    <!-- Scrollable Comments -->
     <main id="tg-comments-container" class="tg-comments-container" role="feed" aria-live="off">
-      <!-- Chat bubbles appended here by bubble-renderer.js and realism-engine-v11.js -->
+      <!-- Bubbles appended via bubble-renderer.js & realism-engine-v11.js -->
     </main>
 
-    <!-- New Comments Notification -->
+    <!-- New Messages Notification -->
     <button id="tg-new-comments" class="hidden tg-new-comments" aria-hidden="true">
       ↓ New messages
     </button>
 
-    <!-- Telegram-style Floating Input Bar -->
+    <!-- Input Bar -->
     <div class="tg-input-wrapper" role="form" aria-label="Send a message">
       <div class="tg-input-bar">
-        <!-- Left: Emoji -->
         <button class="tg-icon-btn" data-type="emoji" aria-label="Emoji picker">
           <i data-lucide="smile"></i>
         </button>
 
-        <!-- Input Field -->
-        <input type="text" id="tg-comment-input" placeholder="Message…" autocomplete="off" />
+        <input type="text" id="tg-comment-input" class="tg-comment-input" placeholder="Message…" autocomplete="off" />
 
-        <!-- Send Button -->
         <button id="tg-send-btn" class="tg-send-btn" aria-label="Send message">
           <i data-lucide="send"></i>
         </button>
 
-        <!-- Right: Media / Camera Buttons -->
         <div class="tg-right-buttons">
           <button class="tg-icon-btn" data-type="media" aria-label="Upload media">
             <i data-lucide="camera"></i>
@@ -130,7 +202,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <script>lucide.createIcons();</script>
 
-  <!-- JS modules (load order matters for modular sync) -->
+  <!-- Modular JS -->
   <script src="identity-personas.js"></script>
   <script src="bubble-renderer.js"></script>
   <script src="realism-engine-v11.js"></script>
