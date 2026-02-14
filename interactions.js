@@ -1,84 +1,47 @@
-// interactions.js
-// Handles admin broadcasts, pin banner display, and other interactions
+// interactions.js — dynamic header meta updates
 
-const pinBanner = document.getElementById('tg-pin-banner');
+const memberCountEl = document.getElementById("tg-member-count");
+const onlineCountEl = document.getElementById("tg-online-count");
+const metaLineEl   = document.getElementById("tg-meta-line"); // new combined line
 
-/**
- * Show admin broadcast as a pin banner
- * @param {Object} broadcast - {image, caption, duration}
- */
-function showPinBanner(broadcast) {
-  // Clear previous content
-  pinBanner.innerHTML = '';
+// Example: initial values
+let members = 1284;
+let online  = 128;
 
-  // Create image if available
-  if (broadcast.image) {
-    const img = document.createElement('img');
-    img.src = broadcast.image;
-    img.alt = 'Pin';
-    img.style.height = '48px';
-    img.style.width = '48px';
-    img.style.objectFit = 'cover';
-    img.style.borderRadius = '8px';
-    pinBanner.appendChild(img);
-  }
-
-  // Caption
-  if (broadcast.caption) {
-    const caption = document.createElement('div');
-    caption.textContent = broadcast.caption;
-    caption.style.flex = '1';
-    caption.style.marginLeft = '8px';
-    caption.style.fontSize = '13px';
-    caption.style.color = 'inherit';
-    pinBanner.appendChild(caption);
-  }
-
-  // Show the banner
-  pinBanner.classList.remove('hidden');
-
-  // Auto-hide after duration (default 10s)
-  const duration = broadcast.duration || 10000;
-  setTimeout(() => {
-    pinBanner.classList.add('hidden');
-  }, duration);
+// Utility: format numbers with commas
+function formatNumber(num) {
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
-/**
- * Trigger admin broadcast + also render it in chat bubble
- * @param {Object} broadcast
- */
-function adminBroadcast(broadcast) {
-  // Show as pin banner
-  showPinBanner(broadcast);
-
-  // Also render as admin bubble
-  const { createBubble, renderBubbles } = window.BubbleRenderer || {};
-  if (createBubble && renderBubbles) {
-    // Fetch existing bubbles (optional: maintain message queue)
-    const messages = window.chatMessages || [];
-    const msgObj = {
-      sender: 'Admin',
-      text: broadcast.caption || '',
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      viewers: 0,
-      admin: true,
-      pinned: true,
-      avatar: broadcast.avatar || 'assets/admin-avatar.jpg'
-    };
-    messages.push(msgObj);
-    window.chatMessages = messages;
-
-    renderBubbles(messages);
+// Update header meta dynamically
+function updateHeaderMeta() {
+  if (metaLineEl) {
+    metaLineEl.textContent = `${formatNumber(members)} members, ${formatNumber(online)} online`;
+  } else {
+    // fallback: individual spans
+    if (memberCountEl) memberCountEl.textContent = `${formatNumber(members)} members`;
+    if (onlineCountEl)  onlineCountEl.textContent = `${formatNumber(online)} online`;
   }
 }
 
-// Example usage
-// adminBroadcast({
-//   image: 'assets/broadcast.jpg',
-//   caption: '🎉 Welcome to Profit Hunters!',
-//   duration: 15000
-// });
+// Simulate member activity (for testing)
+function simulateMemberActivity() {
+  // Randomly change online count
+  online = Math.max(1, online + Math.floor(Math.random()*5-2));
+  updateHeaderMeta();
+}
 
-// Export if using modules
-export { showPinBanner, adminBroadcast };
+// Example: admin broadcast triggers a pin banner
+const pinBanner = document.getElementById("tg-pin-banner");
+function showPin(stickerUrl, caption) {
+  if (!pinBanner) return;
+  pinBanner.innerHTML = `<img src="${stickerUrl}" alt="Pin sticker" style="height:36px;width:36px;border-radius:6px;margin-right:8px;" />
+                         <span>${caption}</span>`;
+  pinBanner.classList.remove("hidden");
+  // Hide after 10s (optional)
+  setTimeout(()=>pinBanner.classList.add("hidden"), 10000);
+}
+
+// Initialize
+updateHeaderMeta();
+setInterval(simulateMemberActivity, 5000); // update every 5s
