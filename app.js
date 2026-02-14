@@ -1,96 +1,161 @@
-// app.js — main application logic for chat UI
+// app.js
 
-document.addEventListener('DOMContentLoaded', () => {
-  const commentsContainer = document.getElementById('tg-comments-container');
-  const jumpIndicator = document.getElementById('tg-jump-indicator');
+// ============================
+// MESSAGE DATA / SIMULATION
+// ============================
 
-  // === SCROLLING & JUMP INDICATOR ===
-  let userScrolled = false;
+let messages = [
+  {
+    id: 1,
+    sender: "Alice",
+    type: "incoming",
+    text: "Hey, anyone tried the new Abrox bot?",
+    timestamp: new Date().toLocaleTimeString(),
+    viewers: 12,
+    pinned: false
+  },
+  {
+    id: 2,
+    sender: "Admin",
+    type: "outgoing",
+    text: "Yes! It’s working perfectly. Check the latest signals.",
+    timestamp: new Date().toLocaleTimeString(),
+    viewers: 45,
+    pinned: true
+  }
+];
 
-  commentsContainer.addEventListener('scroll', () => {
-    const scrollBottom = commentsContainer.scrollHeight - commentsContainer.scrollTop - commentsContainer.clientHeight;
-    userScrolled = scrollBottom > 10;
+// ============================
+// BUBBLE RENDERER
+// ============================
 
-    if (userScrolled) {
-      jumpIndicator.classList.remove('hidden');
-    } else {
-      jumpIndicator.classList.add('hidden');
-    }
-  });
+const commentsContainer = document.getElementById("tg-comments-container");
 
-  jumpIndicator.addEventListener('click', () => {
-    commentsContainer.scrollTo({ top: commentsContainer.scrollHeight, behavior: 'smooth' });
-    jumpIndicator.classList.add('hidden');
-  });
+function createBubble(msg) {
+  const bubble = document.createElement("div");
+  bubble.classList.add("tg-bubble", msg.type);
+  if (msg.pinned) bubble.classList.add("pinned");
 
-  // === HELPER: APPEND BUBBLE ===
-  window.renderBubble = function({ sender, text, type = 'incoming', timestamp = new Date(), viewers = 0, pinned = false }) {
-    const bubble = document.createElement('div');
-    bubble.classList.add('tg-bubble', type);
-    if (pinned) bubble.classList.add('pinned');
+  // Avatar
+  const avatar = document.createElement("img");
+  avatar.classList.add("tg-bubble-avatar");
+  avatar.src = msg.type === "incoming" ? "assets/user.jpg" : "assets/logo.jpg";
+  avatar.alt = `${msg.sender} avatar`;
 
-    // Avatar
-    const avatar = document.createElement('img');
-    avatar.className = 'tg-bubble-avatar';
-    avatar.src = type === 'outgoing' ? 'assets/avatar-you.jpg' : 'assets/avatar-other.jpg';
-    bubble.appendChild(avatar);
+  // Content
+  const content = document.createElement("div");
+  content.classList.add("tg-bubble-content");
 
-    // Content
-    const content = document.createElement('div');
-    content.className = 'tg-bubble-content';
+  const senderEl = document.createElement("div");
+  senderEl.classList.add("tg-bubble-sender");
+  senderEl.textContent = msg.sender;
 
-    // Sender
-    const senderEl = document.createElement('div');
-    senderEl.className = 'tg-bubble-sender';
-    senderEl.textContent = sender;
-    content.appendChild(senderEl);
+  const textEl = document.createElement("div");
+  textEl.classList.add("tg-bubble-text");
+  textEl.textContent = msg.text;
 
-    // Text
-    const textEl = document.createElement('div');
-    textEl.className = 'tg-bubble-text';
-    textEl.textContent = text;
-    content.appendChild(textEl);
+  // Meta (timestamp + viewers)
+  const metaEl = document.createElement("div");
+  metaEl.classList.add("tg-bubble-meta");
 
-    // Meta (timestamp + viewers)
-    const metaEl = document.createElement('div');
-    metaEl.className = 'tg-bubble-meta';
+  const timeEl = document.createElement("span");
+  timeEl.textContent = msg.timestamp;
 
-    const timeEl = document.createElement('span');
-    timeEl.className = 'tg-bubble-timestamp';
-    timeEl.textContent = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    metaEl.appendChild(timeEl);
+  const viewersEl = document.createElement("div");
+  viewersEl.classList.add("tg-bubble-viewers");
+  viewersEl.innerHTML = `<i data-lucide="eye"></i> ${msg.viewers}`;
 
-    if (viewers > 0) {
-      const viewersEl = document.createElement('span');
-      viewersEl.className = 'tg-bubble-viewers';
-      viewersEl.innerHTML = `<i data-lucide="eye"></i>${viewers}`;
-      metaEl.appendChild(viewersEl);
-    }
+  metaEl.appendChild(timeEl);
+  metaEl.appendChild(viewersEl);
 
-    content.appendChild(metaEl);
+  // Assemble
+  content.appendChild(senderEl);
+  content.appendChild(textEl);
+  content.appendChild(metaEl);
 
-    bubble.appendChild(content);
+  bubble.appendChild(avatar);
+  bubble.appendChild(content);
 
-    // Activate Lucide icons inside new bubble
-    if (window.lucide) lucide.createIcons();
+  return bubble;
+}
 
-    return bubble;
-  };
+// ============================
+// RENDER ALL MESSAGES
+// ============================
 
-  // === INITIAL SCROLL TO BOTTOM ===
-  commentsContainer.scrollTop = commentsContainer.scrollHeight;
-
-  // === SIMULATE INCOMING MESSAGES ===
-  setInterval(() => {
-    const bubble = window.renderBubble({
-      sender: 'Alice',
-      text: 'This is a test message!',
-      type: 'incoming',
-      timestamp: new Date(),
-      viewers: Math.floor(Math.random() * 20)
-    });
+function renderMessages() {
+  commentsContainer.innerHTML = "";
+  messages.forEach(msg => {
+    const bubble = createBubble(msg);
     commentsContainer.appendChild(bubble);
+  });
+  // Scroll to bottom after render
+  commentsContainer.scrollTop = commentsContainer.scrollHeight;
+}
 
-    if (!userScrolled) commentsContainer.scrollTop = commentsContainer.scrollHeight;
-  }, 8000);
+renderMessages();
+
+// ============================
+// SEND MESSAGE FUNCTION
+// ============================
+
+function sendMessage(text) {
+  const newMsg = {
+    id: messages.length + 1,
+    sender: "You",
+    type: "outgoing",
+    text,
+    timestamp: new Date().toLocaleTimeString(),
+    viewers: 1,
+    pinned: false
+  };
+  messages.push(newMsg);
+  const bubble = createBubble(newMsg);
+  commentsContainer.appendChild(bubble);
+  commentsContainer.scrollTop = commentsContainer.scrollHeight;
+}
+
+// ============================
+// PIN BANNER HANDLER
+// ============================
+
+const pinBanner = document.getElementById("tg-pin-banner");
+
+function updatePinBanner() {
+  const pinnedMsg = messages.find(msg => msg.pinned);
+  if (pinnedMsg) {
+    pinBanner.innerHTML = `<i data-lucide="pin"></i> ${pinnedMsg.sender}: ${pinnedMsg.text}`;
+    pinBanner.classList.remove("hidden");
+    lucide.createIcons();
+  } else {
+    pinBanner.classList.add("hidden");
+  }
+}
+
+updatePinBanner();
+
+// ============================
+// NEW MESSAGE JUMP INDICATOR
+// ============================
+
+const jumpIndicator = document.getElementById("tg-jump-indicator");
+
+commentsContainer.addEventListener("scroll", () => {
+  const scrollBottom = commentsContainer.scrollHeight - commentsContainer.scrollTop - commentsContainer.clientHeight;
+  if (scrollBottom > 100) {
+    jumpIndicator.classList.remove("hidden");
+  } else {
+    jumpIndicator.classList.add("hidden");
+  }
 });
+
+jumpIndicator.addEventListener("click", () => {
+  commentsContainer.scrollTop = commentsContainer.scrollHeight;
+  jumpIndicator.classList.add("hidden");
+});
+
+// ============================
+// INITIALIZE LUCIDE ICONS
+// ============================
+
+lucide.createIcons();
