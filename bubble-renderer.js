@@ -1,87 +1,83 @@
-// bubble-renderer.js
+// bubble-renderer.js — modular Telegram-style message rendering
 
-const commentsContainer = document.getElementById("tg-comments-container");
+document.addEventListener("DOMContentLoaded", () => {
+  const container = document.getElementById("tg-comments-container");
 
-/**
- * Create a single message bubble
- * @param {Object} msg - message object
- * @param {string} msg.sender - sender name
- * @param {string} msg.type - "incoming" or "outgoing"
- * @param {string} msg.text - message text
- * @param {string} msg.timestamp - formatted time string
- * @param {number} msg.viewers - number of viewers
- * @param {boolean} msg.pinned - whether message is pinned
- */
-function createBubble(msg) {
-  const bubble = document.createElement("div");
-  bubble.classList.add("tg-bubble", msg.type);
-  if (msg.pinned) bubble.classList.add("pinned");
+  if (!container) return;
 
-  // Avatar
-  const avatar = document.createElement("img");
-  avatar.classList.add("tg-bubble-avatar");
-  avatar.src = msg.type === "incoming" ? "assets/user.jpg" : "assets/logo.jpg";
-  avatar.alt = `${msg.sender} avatar`;
+  // Helper: create a single bubble
+  function createBubble({ sender, text, type = "incoming", time = "", viewers = 0, avatar }) {
+    const bubble = document.createElement("div");
+    bubble.className = `tg-bubble ${type}`;
 
-  // Content wrapper
-  const content = document.createElement("div");
-  content.classList.add("tg-bubble-content");
+    // Avatar
+    const avatarEl = document.createElement("img");
+    avatarEl.className = "tg-bubble-avatar";
+    avatarEl.src = avatar || "assets/default-avatar.jpg";
+    avatarEl.alt = sender;
+    bubble.appendChild(avatarEl);
 
-  // Sender
-  const senderEl = document.createElement("div");
-  senderEl.classList.add("tg-bubble-sender");
-  senderEl.textContent = msg.sender;
+    // Content wrapper
+    const content = document.createElement("div");
+    content.className = "tg-bubble-content";
 
-  // Text
-  const textEl = document.createElement("div");
-  textEl.classList.add("tg-bubble-text");
-  textEl.textContent = msg.text;
+    // Sender name
+    const senderEl = document.createElement("div");
+    senderEl.className = "tg-bubble-sender";
+    senderEl.textContent = sender;
+    content.appendChild(senderEl);
 
-  // Meta (timestamp + viewers)
-  const metaEl = document.createElement("div");
-  metaEl.classList.add("tg-bubble-meta");
+    // Message text
+    const textEl = document.createElement("div");
+    textEl.className = "tg-bubble-text";
+    textEl.textContent = text;
+    content.appendChild(textEl);
 
-  const timeEl = document.createElement("span");
-  timeEl.textContent = msg.timestamp;
+    // Meta (time + viewers)
+    const metaEl = document.createElement("div");
+    metaEl.className = "tg-bubble-meta";
 
-  const viewersEl = document.createElement("div");
-  viewersEl.classList.add("tg-bubble-viewers");
-  viewersEl.innerHTML = `<i data-lucide="eye"></i> ${msg.viewers}`;
+    if(time){
+      const timeEl = document.createElement("span");
+      timeEl.textContent = time;
+      metaEl.appendChild(timeEl);
+    }
 
-  metaEl.appendChild(timeEl);
-  metaEl.appendChild(viewersEl);
+    if(viewers){
+      const viewersEl = document.createElement("div");
+      viewersEl.className = "tg-bubble-viewers";
+      viewersEl.textContent = `${viewers} views`;
+      metaEl.appendChild(viewersEl);
+    }
 
-  // Assemble bubble content
-  content.appendChild(senderEl);
-  content.appendChild(textEl);
-  content.appendChild(metaEl);
+    content.appendChild(metaEl);
 
-  // Assemble full bubble
-  bubble.appendChild(avatar);
-  bubble.appendChild(content);
+    bubble.appendChild(content);
+    return bubble;
+  }
 
-  return bubble;
-}
+  // Append a message to container
+  function appendMessage(messageData) {
+    const bubble = createBubble(messageData);
+    container.appendChild(bubble);
+    container.scrollTop = container.scrollHeight; // auto-scroll
+  }
 
-/**
- * Render all messages in an array
- * @param {Array} messages - array of message objects
- */
-function renderMessages(messages) {
-  commentsContainer.innerHTML = "";
-  messages.forEach(msg => {
-    const bubble = createBubble(msg);
-    commentsContainer.appendChild(bubble);
+  // Expose globally for app.js to call
+  window.TGRenderer = {
+    appendMessage
+  };
+
+  // Example: listen to sendMessage event from interactions.js
+  document.addEventListener("sendMessage", (e) => {
+    const text = e.detail;
+    appendMessage({
+      sender: "You",
+      text,
+      type: "outgoing",
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      viewers: 0,
+      avatar: "assets/my-avatar.jpg"
+    });
   });
-  // Scroll to bottom after render
-  commentsContainer.scrollTop = commentsContainer.scrollHeight;
-}
-
-// Export for modular usage
-window.bubbleRenderer = {
-  createBubble,
-  renderMessages
-};
-
-// Initialize Lucide icons
-lucide.createIcons();
+});
