@@ -1,107 +1,107 @@
 // bubble-renderer.js
-// Handles creating and rendering chat bubbles with realism and Telegram-style formatting
+// Responsible for rendering chat bubbles, avatars, timestamps, grouping
 
-const tgCommentsContainer = document.getElementById("tg-comments-container");
+const tgContainer = document.getElementById("tg-comments-container");
 
-/**
- * Creates a chat bubble
- * @param {Object} message - Message data
- * @param {string} message.id - Unique message id
- * @param {string} message.text - Message text
- * @param {string} message.avatar - Avatar URL or persona
- * @param {string} message.sender - 'admin' or 'member'
- * @param {Date} message.timestamp - Message timestamp
- * @param {boolean} message.isReply - Whether this is a reply preview
- * @param {Array} message.reactions - Array of emoji reactions
- */
-function createBubble(message) {
-  const bubbleWrapper = document.createElement("div");
-  bubbleWrapper.classList.add("tg-bubble-wrapper");
-  if (message.sender === "admin") bubbleWrapper.classList.add("admin-bubble");
-  else bubbleWrapper.classList.add("member-bubble");
+// Utility: format timestamp
+function formatTimestamp(date) {
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? "PM" : "AM";
+  const h = hours % 12 || 12;
+  const m = minutes < 10 ? "0" + minutes : minutes;
+  return `${h}:${m} ${ampm}`;
+}
 
-  // Avatar
+// Utility: create avatar element
+function createAvatar(user) {
   const avatar = document.createElement("img");
-  avatar.src = message.avatar;
-  avatar.alt = message.sender;
-  avatar.className = "tg-bubble-avatar";
+  avatar.className = "tg-avatar";
+  avatar.src = user.avatar || `assets/first-letter/${user.name[0].toUpperCase()}.jpg`;
+  avatar.alt = user.name;
+  return avatar;
+}
 
-  // Bubble container
+// Utility: create bubble
+function createBubble(message, isAdmin = false, showAvatar = true) {
+  const wrapper = document.createElement("div");
+  wrapper.className = `tg-bubble-wrapper ${isAdmin ? "tg-admin" : "tg-member"}`;
+
+  if (showAvatar) {
+    wrapper.appendChild(createAvatar(message.user));
+  }
+
   const bubble = document.createElement("div");
   bubble.className = "tg-bubble";
 
   // Message text
-  const textEl = document.createElement("div");
-  textEl.className = "tg-bubble-text";
-  textEl.innerText = message.text;
+  const text = document.createElement("div");
+  text.className = "tg-text";
+  text.textContent = message.text;
+  bubble.appendChild(text);
 
   // Timestamp
-  const timestampEl = document.createElement("div");
-  timestampEl.className = "tg-bubble-timestamp";
-  timestampEl.innerText = formatTimestamp(message.timestamp);
+  const ts = document.createElement("div");
+  ts.className = "tg-timestamp";
+  ts.textContent = formatTimestamp(new Date(message.timestamp));
+  bubble.appendChild(ts);
 
-  // Reactions
-  const reactionsEl = document.createElement("div");
-  reactionsEl.className = "tg-bubble-reactions";
-  if (message.reactions && message.reactions.length > 0) {
-    message.reactions.forEach((emoji) => {
-      const span = document.createElement("span");
-      span.className = "tg-reaction";
-      span.innerText = emoji;
-      reactionsEl.appendChild(span);
-    });
+  wrapper.appendChild(bubble);
+
+  return wrapper;
+}
+
+// Utility: insert date separator
+function createDateSeparator(date) {
+  const separator = document.createElement("div");
+  separator.className = "tg-date-separator";
+  separator.textContent = date.toDateString();
+  return separator;
+}
+
+// Render messages array
+function renderMessages(messages) {
+  tgContainer.innerHTML = ""; // Clear first
+  let lastDate = null;
+  let lastUserId = null;
+
+  messages.forEach((msg) => {
+    const msgDate = new Date(msg.timestamp);
+    if (!lastDate || lastDate.toDateString() !== msgDate.toDateString()) {
+      tgContainer.appendChild(createDateSeparator(msgDate));
+      lastDate = msgDate;
+    }
+
+    // Group consecutive messages from same user
+    const showAvatar = msg.user.id !== lastUserId;
+    const bubbleEl = createBubble(msg, msg.user.isAdmin, showAvatar);
+    tgContainer.appendChild(bubbleEl);
+
+    lastUserId = msg.user.id;
+  });
+
+  // Scroll to bottom
+  tgContainer.scrollTop = tgContainer.scrollHeight;
+}
+
+// Simulate adding new message
+function appendMessage(msg) {
+  const msgDate = new Date(msg.timestamp);
+  const lastChild = tgContainer.lastElementChild;
+  if (!lastChild || lastChild.className === "tg-date-separator" || lastChild.dataset.date !== msgDate.toDateString()) {
+    tgContainer.appendChild(createDateSeparator(msgDate));
   }
+  const showAvatar = lastChild && lastChild.dataset.user !== msg.user.id;
+  const bubbleEl = createBubble(msg, msg.user.isAdmin, showAvatar);
+  bubbleEl.dataset.user = msg.user.id;
+  bubbleEl.dataset.date = msgDate.toDateString();
+  tgContainer.appendChild(bubbleEl);
 
-  // Reply preview
-  if (message.isReply && message.replyText) {
-    const replyEl = document.createElement("div");
-    replyEl.className = "tg-bubble-reply";
-    replyEl.innerText = message.replyText;
-    bubble.appendChild(replyEl);
-  }
-
-  // Append text, reactions, timestamp
-  bubble.appendChild(textEl);
-  bubble.appendChild(reactionsEl);
-  bubble.appendChild(timestampEl);
-
-  // Compose bubble wrapper
-  bubbleWrapper.appendChild(avatar);
-  bubbleWrapper.appendChild(bubble);
-
-  return bubbleWrapper;
+  tgContainer.scrollTop = tgContainer.scrollHeight;
 }
 
-/**
- * Render message to container
- * @param {Object} message
- */
-function renderMessage(message) {
-  const bubbleEl = createBubble(message);
-  tgCommentsContainer.appendChild(bubbleEl);
-
-  // Auto-scroll to bottom for live messages
-  tgCommentsContainer.scrollTop = tgCommentsContainer.scrollHeight;
-}
-
-/**
- * Utility: format timestamp like Telegram
- */
-function formatTimestamp(date) {
-  const hours = date.getHours();
-  const minutes = date.getMinutes().toString().padStart(2, "0");
-  return `${hours}:${minutes}`;
-}
-
-/**
- * Clear all messages
- */
-function clearMessages() {
-  tgCommentsContainer.innerHTML = "";
-}
-
-// Expose functions globally
-window.bubbleRenderer = {
-  renderMessage,
-  clearMessages,
+// Export functions for realism engine
+window.tgRender = {
+  renderMessages,
+  appendMessage,
 };
