@@ -1,63 +1,57 @@
 // bubble-renderer.js
+// Responsible for rendering chat bubbles dynamically
 
 const commentsContainer = document.getElementById('tg-comments-container');
 
 /**
- * Render a chat bubble
- * @param {Object} message
- *   message = {
- *     id: string|number,
- *     sender: "Admin" | "Member",
- *     text: "Message content",
- *     timestamp: "12:34 PM",
- *     viewers: 12, // optional
- *     pinned: false, // optional
- *     outgoing: false // optional
- *   }
+ * Create a single message bubble
+ * @param {Object} message - {id, sender, text, time, viewers, admin, pinned, avatar}
  */
-function renderBubble(message) {
-  if (!message || !message.text) return;
-
+function createBubble(message) {
   const bubble = document.createElement('div');
   bubble.classList.add('tg-bubble');
-  if (message.outgoing) bubble.classList.add('outgoing', 'admin');
-  else bubble.classList.add('incoming', 'member');
+
+  if (message.admin) bubble.classList.add('outgoing'); // admin messages to the right
+  else bubble.classList.add('incoming');
+
   if (message.pinned) bubble.classList.add('pinned');
 
-  // Avatar (optional: you can set admin/member avatar)
+  // Avatar
   const avatar = document.createElement('img');
   avatar.classList.add('tg-bubble-avatar');
-  avatar.src = message.outgoing ? 'assets/admin-avatar.jpg' : 'assets/member-avatar.jpg';
+  avatar.src = message.avatar || 'assets/default-avatar.jpg';
   avatar.alt = message.sender;
-  bubble.appendChild(avatar);
 
-  // Content
+  // Bubble content
   const content = document.createElement('div');
   content.classList.add('tg-bubble-content');
 
-  // Sender
-  const sender = document.createElement('div');
-  sender.classList.add('tg-bubble-sender');
-  sender.textContent = message.sender;
-  content.appendChild(sender);
+  // Sender name
+  if (message.sender) {
+    const senderName = document.createElement('div');
+    senderName.classList.add('tg-bubble-sender');
+    senderName.textContent = message.sender;
+    content.appendChild(senderName);
+  }
 
-  // Text
+  // Message text
   const text = document.createElement('div');
   text.classList.add('tg-bubble-text');
-  text.textContent = message.text;
+  text.innerHTML = message.text;
   content.appendChild(text);
 
-  // Meta: timestamp + viewers
+  // Bubble meta (time + viewers)
   const meta = document.createElement('div');
   meta.classList.add('tg-bubble-meta');
 
-  const time = document.createElement('span');
-  time.classList.add('tg-bubble-timestamp');
-  time.textContent = message.timestamp || '';
+  // Timestamp
+  const timestamp = document.createElement('span');
+  timestamp.classList.add('tg-bubble-timestamp');
+  timestamp.textContent = message.time || '';
+  meta.appendChild(timestamp);
 
-  meta.appendChild(time);
-
-  if (message.viewers != null) {
+  // Viewer count with eye icon
+  if (message.viewers) {
     const viewers = document.createElement('span');
     viewers.classList.add('tg-bubble-viewers');
     viewers.innerHTML = `<i data-lucide="eye"></i> ${message.viewers}`;
@@ -65,27 +59,41 @@ function renderBubble(message) {
   }
 
   content.appendChild(meta);
-  bubble.appendChild(content);
 
-  commentsContainer.appendChild(bubble);
+  // Append avatar + content in correct order
+  if (message.admin) {
+    bubble.appendChild(content);
+    bubble.appendChild(avatar);
+  } else {
+    bubble.appendChild(avatar);
+    bubble.appendChild(content);
+  }
 
-  // Auto-scroll to bottom
-  commentsContainer.scrollTop = commentsContainer.scrollHeight;
-
-  // Refresh Lucide icons
-  if (window.lucide) lucide.createIcons();
+  return bubble;
 }
 
 /**
- * Example usage:
- * renderBubble({
- *   sender: "Admin",
- *   text: "Hello everyone!",
- *   timestamp: "12:34 PM",
- *   viewers: 12,
- *   pinned: true,
- *   outgoing: true
- * });
+ * Render multiple messages
+ * @param {Array} messages
  */
+function renderBubbles(messages) {
+  commentsContainer.innerHTML = '';
+  messages.forEach(msg => {
+    const bubble = createBubble(msg);
+    commentsContainer.appendChild(bubble);
+  });
 
-export { renderBubble };
+  // Scroll to bottom
+  commentsContainer.scrollTop = commentsContainer.scrollHeight;
+
+  // Recreate Lucide icons inside new bubbles
+  if (window.lucide) lucide.createIcons();
+}
+
+// Example usage:
+// renderBubbles([
+//   { sender: "Alice", text: "Hello!", time: "12:45", viewers: 3, avatar:"assets/alice.jpg" },
+//   { sender: "Admin", text: "Pinned message here", time: "12:46", viewers: 128, admin:true, pinned:true }
+// ]);
+
+export { renderBubbles, createBubble };
