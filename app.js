@@ -1,53 +1,48 @@
-// app.js — input bar & send button transform
+// app.js
 
-const commentInput = document.getElementById("tg-comment-input");
-const sendBtn = document.getElementById("tg-send-btn");
-const emojiBtn = document.getElementById("tg-emoji-btn");
-const cameraBtn = document.getElementById("tg-camera-btn");
+document.addEventListener("DOMContentLoaded", () => {
+  const input = document.getElementById("tg-comment-input");
+  const sendBtn = document.getElementById("tg-send-btn");
+  const cameraBtn = document.getElementById("tg-camera-btn");
 
-// Show/hide send button dynamically
-function updateSendButton() {
-  if (commentInput.value.trim().length > 0) {
-    // Show send button
-    sendBtn.classList.remove("hidden");
-    emojiBtn.classList.add("hidden");
-    cameraBtn.classList.add("hidden");
-  } else {
-    // Show emoji & camera icons
-    sendBtn.classList.add("hidden");
-    emojiBtn.classList.remove("hidden");
-    cameraBtn.classList.remove("hidden");
-  }
-}
+  // Initially hide send, show camera/emoji
+  sendBtn.classList.add("hidden");
+  cameraBtn.classList.remove("hidden");
 
-// Input event listeners
-commentInput.addEventListener("input", updateSendButton);
-commentInput.addEventListener("focus", updateSendButton);
-commentInput.addEventListener("blur", updateSendButton);
-
-// Send button click
-sendBtn.addEventListener("click", () => {
-  const text = commentInput.value.trim();
-  if (!text) return;
-
-  // Example: render as member bubble
-  chatRenderer.renderBubble({
-    id: Date.now(),
-    sender: "member",
-    name: "You",
-    avatar: "assets/member-avatar.jpg",
-    text,
-    timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-    views: 0,
-    pinned: false
+  input.addEventListener("input", () => {
+    if (input.value.trim().length > 0) {
+      // Show send, hide camera
+      sendBtn.classList.remove("hidden");
+      cameraBtn.classList.add("hidden");
+    } else {
+      // Hide send, show camera
+      sendBtn.classList.add("hidden");
+      cameraBtn.classList.remove("hidden");
+    }
   });
 
-  commentInput.value = "";
-  updateSendButton();
+  // Optional: press enter to send
+  input.addEventListener("keypress", (e) => {
+    if (e.key === "Enter" && input.value.trim().length > 0) {
+      sendMessage(input.value);
+      input.value = "";
+      sendBtn.classList.add("hidden");
+      cameraBtn.classList.remove("hidden");
+    }
+  });
 
-  // Scroll to bottom
-  tgCommentsContainer.scrollTop = tgCommentsContainer.scrollHeight;
+  function sendMessage(text) {
+    // Bubble renderer handles appending message
+    if (typeof appendBubble === "function") {
+      appendBubble({
+        sender: "member",
+        text,
+        timestamp: new Date(),
+        viewers: 0,
+      });
+    }
+    // Optional: scroll to bottom
+    const container = document.getElementById("tg-comments-container");
+    container.scrollTop = container.scrollHeight;
+  }
 });
-
-// Initialize on load
-updateSendButton();
