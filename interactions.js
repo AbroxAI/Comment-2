@@ -1,66 +1,62 @@
-// ============================
-// interactions.js
-// ============================
+// interactions.js — header meta updates + input send button behavior
 
-// DOM references
-const pinBanner = document.getElementById("tg-pin-banner");
-const memberCountElem = document.getElementById("tg-member-count");
-const onlineCountElem = document.getElementById("tg-online-count");
-const metaLine = document.getElementById("tg-meta-line"); // if using combined line
+document.addEventListener('DOMContentLoaded', () => {
+  const input = document.getElementById('tg-comment-input');
+  const sendBtn = document.getElementById('tg-send-btn');
+  const emojiBtn = document.getElementById('tg-emoji-btn');
+  const cameraBtn = document.getElementById('tg-camera-btn');
+  const metaLine = document.getElementById('tg-meta-line') || document.getElementById('tg-meta');
 
-// ============================
-// Header Meta Updates
-// ============================
-export function updateHeaderMeta(members, online) {
-  if (metaLine) {
-    // Telegram style: "1,284 members, 128 online"
-    metaLine.textContent = `${members.toLocaleString()} members, ${online.toLocaleString()} online`;
-  } else {
-    // Fallback if separate spans
-    if (memberCountElem) memberCountElem.textContent = `${members.toLocaleString()} members`;
-    if (onlineCountElem) onlineCountElem.textContent = `${online.toLocaleString()} online`;
+  // === SEND BUTTON TRANSFORM ===
+  function updateSendButton() {
+    if (input.value.trim().length > 0) {
+      sendBtn.classList.remove('hidden');
+      emojiBtn.classList.add('hidden');
+      cameraBtn.classList.add('hidden');
+    } else {
+      sendBtn.classList.add('hidden');
+      emojiBtn.classList.remove('hidden');
+      cameraBtn.classList.remove('hidden');
+    }
   }
-}
 
-// ============================
-// Pin Banner Handling
-// ============================
-export function showPinBanner(stickerUrl, caption) {
-  if (!pinBanner) return;
-  pinBanner.innerHTML = ""; // clear previous
+  input.addEventListener('input', updateSendButton);
+  updateSendButton(); // initial state
 
-  // Sticker
-  const img = document.createElement("img");
-  img.src = stickerUrl;
-  img.alt = "Pinned";
-  img.style.width = "36px";
-  img.style.height = "36px";
-  img.style.borderRadius = "8px";
-  img.style.objectFit = "cover";
+  // Optional: click send triggers a message render
+  sendBtn.addEventListener('click', () => {
+    const text = input.value.trim();
+    if (!text) return;
 
-  // Caption
-  const span = document.createElement("span");
-  span.textContent = caption;
-  span.style.flex = "1";
-  span.style.fontSize = "13px";
-  span.style.color = "inherit";
+    // Example: render your own bubble
+    if (window.renderBubble && document.getElementById('tg-comments-container')) {
+      const bubble = renderBubble({
+        sender: 'You',
+        text,
+        type: 'outgoing',
+        timestamp: new Date(),
+        viewers: 1
+      });
+      document.getElementById('tg-comments-container').appendChild(bubble);
+      bubble.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
 
-  pinBanner.appendChild(img);
-  pinBanner.appendChild(span);
-  pinBanner.classList.remove("hidden");
-}
+    input.value = '';
+    updateSendButton();
+  });
 
-// Optional: hide pin banner after some time
-export function hidePinBanner(delay = 5000) {
-  if (!pinBanner) return;
-  setTimeout(() => {
-    pinBanner.classList.add("hidden");
-  }, delay);
-}
+  // === HEADER META UPDATES ===
+  function updateHeaderMeta(members, online) {
+    if (!metaLine) return;
+    metaLine.textContent = `${members.toLocaleString()} members, ${online.toLocaleString()} online`;
+  }
 
-// ============================
-// Example usage (can be triggered from app.js)
-// ============================
-// updateHeaderMeta(1284, 128);
-// showPinBanner("assets/broadcast.jpg", "Welcome to Profit Hunters Chat!");
-// hidePinBanner(8000);
+  // Example: initial header meta
+  updateHeaderMeta(1284, 128);
+
+  // Simulate dynamic updates (could be tied to WebSocket or API)
+  setInterval(() => {
+    const randomOnline = Math.floor(Math.random() * 200);
+    updateHeaderMeta(1284, randomOnline);
+  }, 5000);
+});
