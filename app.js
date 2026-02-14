@@ -1,48 +1,39 @@
-// app.js
-
-document.addEventListener("DOMContentLoaded", () => {
+// app.js — Send button transform & input interactions
+(() => {
   const input = document.getElementById("tg-comment-input");
   const sendBtn = document.getElementById("tg-send-btn");
   const cameraBtn = document.getElementById("tg-camera-btn");
 
-  // Initially hide send, show camera/emoji
+  // Initial state — hide send button
   sendBtn.classList.add("hidden");
-  cameraBtn.classList.remove("hidden");
 
+  // Input event listener
   input.addEventListener("input", () => {
     if (input.value.trim().length > 0) {
-      // Show send, hide camera
+      // Show send button, hide camera
       sendBtn.classList.remove("hidden");
       cameraBtn.classList.add("hidden");
     } else {
-      // Hide send, show camera
+      // Hide send button, show camera
       sendBtn.classList.add("hidden");
       cameraBtn.classList.remove("hidden");
     }
   });
 
-  // Optional: press enter to send
-  input.addEventListener("keypress", (e) => {
+  // Optional: send message on Enter
+  input.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && input.value.trim().length > 0) {
-      sendMessage(input.value);
+      e.preventDefault();
+      sendMessage(input.value.trim());
       input.value = "";
       sendBtn.classList.add("hidden");
       cameraBtn.classList.remove("hidden");
     }
   });
 
-  function sendMessage(text) {
-    // Bubble renderer handles appending message
-    if (typeof appendBubble === "function") {
-      appendBubble({
-        sender: "member",
-        text,
-        timestamp: new Date(),
-        viewers: 0,
-      });
-    }
-    // Optional: scroll to bottom
-    const container = document.getElementById("tg-comments-container");
-    container.scrollTop = container.scrollHeight;
+  function sendMessage(message) {
+    // Bubble renderer handles append
+    const event = new CustomEvent("sendMessage", { detail: { message } });
+    document.dispatchEvent(event);
   }
-});
+})();
