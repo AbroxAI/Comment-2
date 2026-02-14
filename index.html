@@ -27,7 +27,9 @@
         <img src="assets/logo.jpg" alt="Profit Hunters Logo" class="tg-header-logo" />
         <div class="tg-header-text">
           <div class="tg-title">🌐 Profit Hunters Chat</div>
-          <div class="tg-group-meta" id="tg-group-meta">Created March 2025 · <span id="tg-member-count">1,284 members</span> · <span id="tg-online-count">128 online</span></div>
+          <div class="tg-group-meta">
+            <span id="tg-member-count">1,284 members</span> · <span id="tg-online-count">128 online</span>
+          </div>
         </div>
       </div>
 
@@ -37,11 +39,13 @@
       </button>
     </header>
 
-    <!-- Pin Banner (dynamically populated by interactions.js) -->
+    <!-- Pin Banner (populated by interactions.js after admin pins broadcast) -->
     <div id="tg-pin-banner" class="tg-pin-banner hidden" role="region" aria-live="polite"></div>
 
-    <!-- Post Preview / System message (optional) -->
-    <div id="tg-post-preview" class="tg-post-preview" aria-hidden="false">Loading latest community activity...</div>
+    <!-- Post Preview / System message -->
+    <div id="tg-post-preview" class="tg-post-preview" aria-hidden="false">
+      Loading latest community activity...
+    </div>
 
     <!-- Scrollable Comments Container -->
     <main id="tg-comments-container" class="tg-comments-container" role="feed" aria-live="off"></main>
@@ -58,9 +62,9 @@
         </button>
 
         <!-- Input Field -->
-        <input type="text" id="tg-comment-input" placeholder="Write a comment..." autocomplete="off" aria-label="Write a comment" />
+        <input type="text" id="tg-comment-input" placeholder="Message…" autocomplete="off" aria-label="Write a message" />
 
-        <!-- Send Button (hidden until text) -->
+        <!-- Send Button -->
         <button id="tg-send-btn" class="tg-send-btn" aria-label="Send message">
           <i data-lucide="send"></i>
         </button>
@@ -83,7 +87,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <script>lucide.createIcons();</script>
 
-  <!-- JS modules (load order matters) -->
+  <!-- JS modules (load order matters for modular sync) -->
   <script src="identity-personas.js"></script>
   <script src="bubble-renderer.js"></script>
   <script src="realism-engine-v11.js"></script>
