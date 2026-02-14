@@ -1,79 +1,96 @@
-// ============================
-// app.js
-// ============================
+// app.js — main application logic for chat UI
 
-// DOM references
-const commentInput = document.getElementById("tg-comment-input");
-const sendBtn = document.getElementById("tg-send-btn");
-const emojiBtn = document.getElementById("tg-emoji-btn");
-const cameraBtn = document.getElementById("tg-camera-btn");
-const inputWrapper = document.querySelector(".tg-input-wrapper");
+document.addEventListener('DOMContentLoaded', () => {
+  const commentsContainer = document.getElementById('tg-comments-container');
+  const jumpIndicator = document.getElementById('tg-jump-indicator');
 
-// ============================
-// Floating Pill Input Styling
-// ============================
-function adjustInputStyle() {
-  inputWrapper.style.position = "fixed";
-  inputWrapper.style.bottom = "12px";
-  inputWrapper.style.left = "50%";
-  inputWrapper.style.transform = "translateX(-50%)";
-  inputWrapper.style.width = "calc(100% - 24px)";
-  inputWrapper.style.maxWidth = "600px";
-  inputWrapper.style.borderRadius = "24px";
-  inputWrapper.style.padding = "6px 12px";
-  inputWrapper.style.backgroundColor = getComputedStyle(inputWrapper).backgroundColor;
-  inputWrapper.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
-}
-adjustInputStyle();
-window.addEventListener("resize", adjustInputStyle);
+  // === SCROLLING & JUMP INDICATOR ===
+  let userScrolled = false;
 
-// ============================
-// Send Button Transform
-// ============================
-function toggleSendButton() {
-  const hasText = commentInput.value.trim().length > 0;
-  if (hasText) {
-    sendBtn.classList.remove("hidden");
-    emojiBtn.classList.add("hidden");
-    cameraBtn.classList.add("hidden");
-  } else {
-    sendBtn.classList.add("hidden");
-    emojiBtn.classList.remove("hidden");
-    cameraBtn.classList.remove("hidden");
-  }
-}
+  commentsContainer.addEventListener('scroll', () => {
+    const scrollBottom = commentsContainer.scrollHeight - commentsContainer.scrollTop - commentsContainer.clientHeight;
+    userScrolled = scrollBottom > 10;
 
-// Initial state
-toggleSendButton();
+    if (userScrolled) {
+      jumpIndicator.classList.remove('hidden');
+    } else {
+      jumpIndicator.classList.add('hidden');
+    }
+  });
 
-// Listen for input
-commentInput.addEventListener("input", toggleSendButton);
+  jumpIndicator.addEventListener('click', () => {
+    commentsContainer.scrollTo({ top: commentsContainer.scrollHeight, behavior: 'smooth' });
+    jumpIndicator.classList.add('hidden');
+  });
 
-// ============================
-// Optional: handle send click
-// ============================
-sendBtn.addEventListener("click", () => {
-  const text = commentInput.value.trim();
-  if (!text) return;
+  // === HELPER: APPEND BUBBLE ===
+  window.renderBubble = function({ sender, text, type = 'incoming', timestamp = new Date(), viewers = 0, pinned = false }) {
+    const bubble = document.createElement('div');
+    bubble.classList.add('tg-bubble', type);
+    if (pinned) bubble.classList.add('pinned');
 
-  // Here you would append a bubble via bubble-renderer.js
-  console.log("Send:", text);
+    // Avatar
+    const avatar = document.createElement('img');
+    avatar.className = 'tg-bubble-avatar';
+    avatar.src = type === 'outgoing' ? 'assets/avatar-you.jpg' : 'assets/avatar-other.jpg';
+    bubble.appendChild(avatar);
 
-  commentInput.value = "";
-  toggleSendButton();
+    // Content
+    const content = document.createElement('div');
+    content.className = 'tg-bubble-content';
 
-  // Scroll to bottom or handle new message jump
-  const commentsContainer = document.getElementById("tg-comments-container");
+    // Sender
+    const senderEl = document.createElement('div');
+    senderEl.className = 'tg-bubble-sender';
+    senderEl.textContent = sender;
+    content.appendChild(senderEl);
+
+    // Text
+    const textEl = document.createElement('div');
+    textEl.className = 'tg-bubble-text';
+    textEl.textContent = text;
+    content.appendChild(textEl);
+
+    // Meta (timestamp + viewers)
+    const metaEl = document.createElement('div');
+    metaEl.className = 'tg-bubble-meta';
+
+    const timeEl = document.createElement('span');
+    timeEl.className = 'tg-bubble-timestamp';
+    timeEl.textContent = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    metaEl.appendChild(timeEl);
+
+    if (viewers > 0) {
+      const viewersEl = document.createElement('span');
+      viewersEl.className = 'tg-bubble-viewers';
+      viewersEl.innerHTML = `<i data-lucide="eye"></i>${viewers}`;
+      metaEl.appendChild(viewersEl);
+    }
+
+    content.appendChild(metaEl);
+
+    bubble.appendChild(content);
+
+    // Activate Lucide icons inside new bubble
+    if (window.lucide) lucide.createIcons();
+
+    return bubble;
+  };
+
+  // === INITIAL SCROLL TO BOTTOM ===
   commentsContainer.scrollTop = commentsContainer.scrollHeight;
-});
 
-// ============================
-// Optional: Emoji & Camera buttons
-// ============================
-emojiBtn.addEventListener("click", () => {
-  console.log("Emoji picker open");
-});
+  // === SIMULATE INCOMING MESSAGES ===
+  setInterval(() => {
+    const bubble = window.renderBubble({
+      sender: 'Alice',
+      text: 'This is a test message!',
+      type: 'incoming',
+      timestamp: new Date(),
+      viewers: Math.floor(Math.random() * 20)
+    });
+    commentsContainer.appendChild(bubble);
 
-cameraBtn.addEventListener("click", () => {
-  console.log("Camera / attach open");
+    if (!userScrolled) commentsContainer.scrollTop = commentsContainer.scrollHeight;
+  }, 8000);
 });
