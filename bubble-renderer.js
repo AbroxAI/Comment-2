@@ -1,82 +1,87 @@
-// bubble-renderer.js — Render chat bubbles dynamically
+// bubble-renderer.js
+
+const commentsContainer = document.getElementById("tg-comments-container");
 
 /**
- * @param {Object} data
- * data.sender: string
- * data.text: string
- * data.type: 'incoming' | 'outgoing'
- * data.timestamp: optional, Date or string
- * data.viewers: optional, number
- * data.pinned: optional, boolean
+ * Create a single message bubble
+ * @param {Object} msg - message object
+ * @param {string} msg.sender - sender name
+ * @param {string} msg.type - "incoming" or "outgoing"
+ * @param {string} msg.text - message text
+ * @param {string} msg.timestamp - formatted time string
+ * @param {number} msg.viewers - number of viewers
+ * @param {boolean} msg.pinned - whether message is pinned
  */
-function renderBubble(data) {
-  const bubble = document.createElement('div');
-  bubble.classList.add('tg-bubble', data.type);
-  if (data.pinned) bubble.classList.add('pinned');
+function createBubble(msg) {
+  const bubble = document.createElement("div");
+  bubble.classList.add("tg-bubble", msg.type);
+  if (msg.pinned) bubble.classList.add("pinned");
 
   // Avatar
-  const avatar = document.createElement('img');
-  avatar.classList.add('tg-bubble-avatar');
-  avatar.src = data.avatar || 'assets/default-avatar.png';
-  avatar.alt = data.sender || 'Member';
-  bubble.appendChild(avatar);
+  const avatar = document.createElement("img");
+  avatar.classList.add("tg-bubble-avatar");
+  avatar.src = msg.type === "incoming" ? "assets/user.jpg" : "assets/logo.jpg";
+  avatar.alt = `${msg.sender} avatar`;
 
-  // Bubble content
-  const content = document.createElement('div');
-  content.classList.add('tg-bubble-content');
+  // Content wrapper
+  const content = document.createElement("div");
+  content.classList.add("tg-bubble-content");
 
   // Sender
-  const senderEl = document.createElement('div');
-  senderEl.classList.add('tg-bubble-sender');
-  senderEl.textContent = data.sender || 'Member';
-  content.appendChild(senderEl);
+  const senderEl = document.createElement("div");
+  senderEl.classList.add("tg-bubble-sender");
+  senderEl.textContent = msg.sender;
 
   // Text
-  const textEl = document.createElement('div');
-  textEl.classList.add('tg-bubble-text');
-  textEl.textContent = data.text || '';
-  content.appendChild(textEl);
+  const textEl = document.createElement("div");
+  textEl.classList.add("tg-bubble-text");
+  textEl.textContent = msg.text;
 
   // Meta (timestamp + viewers)
-  const metaEl = document.createElement('div');
-  metaEl.classList.add('tg-bubble-meta');
+  const metaEl = document.createElement("div");
+  metaEl.classList.add("tg-bubble-meta");
 
-  if (data.timestamp) {
-    const tsEl = document.createElement('span');
-    tsEl.classList.add('tg-bubble-timestamp');
-    tsEl.textContent = formatTimestamp(data.timestamp);
-    metaEl.appendChild(tsEl);
-  }
+  const timeEl = document.createElement("span");
+  timeEl.textContent = msg.timestamp;
 
-  if (data.viewers !== undefined) {
-    const viewersEl = document.createElement('span');
-    viewersEl.classList.add('tg-bubble-viewers');
-    viewersEl.innerHTML = `<i data-lucide="eye"></i> ${data.viewers}`;
-    metaEl.appendChild(viewersEl);
-  }
+  const viewersEl = document.createElement("div");
+  viewersEl.classList.add("tg-bubble-viewers");
+  viewersEl.innerHTML = `<i data-lucide="eye"></i> ${msg.viewers}`;
 
-  if (metaEl.childElementCount > 0) {
-    content.appendChild(metaEl);
-  }
+  metaEl.appendChild(timeEl);
+  metaEl.appendChild(viewersEl);
 
+  // Assemble bubble content
+  content.appendChild(senderEl);
+  content.appendChild(textEl);
+  content.appendChild(metaEl);
+
+  // Assemble full bubble
+  bubble.appendChild(avatar);
   bubble.appendChild(content);
-
-  // Initialize Lucide icons for dynamic bubbles
-  if (window.lucide) lucide.createIcons({ parent: bubble });
 
   return bubble;
 }
 
-// Timestamp formatter
-function formatTimestamp(input) {
-  const date = input instanceof Date ? input : new Date(input);
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  const h = hours % 12 || 12;
-  const m = minutes < 10 ? '0' + minutes : minutes;
-  return `${h}:${m} ${ampm}`;
+/**
+ * Render all messages in an array
+ * @param {Array} messages - array of message objects
+ */
+function renderMessages(messages) {
+  commentsContainer.innerHTML = "";
+  messages.forEach(msg => {
+    const bubble = createBubble(msg);
+    commentsContainer.appendChild(bubble);
+  });
+  // Scroll to bottom after render
+  commentsContainer.scrollTop = commentsContainer.scrollHeight;
 }
 
-// Expose globally for app.js
-window.renderBubble = renderBubble;
+// Export for modular usage
+window.bubbleRenderer = {
+  createBubble,
+  renderMessages
+};
+
+// Initialize Lucide icons
+lucide.createIcons();
