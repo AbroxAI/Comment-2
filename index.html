@@ -7,6 +7,41 @@
 
   <!-- CSS -->
   <link rel="stylesheet" href="widget.css" />
+  <style>
+    /* Telegram-accurate header styling */
+    .tg-header-center {
+      display: flex;
+      align-items: center;
+      gap: 8px; /* compact spacing between avatar and text */
+    }
+
+    .tg-header-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .tg-header-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tg-title {
+      font-size: 16px;
+      font-weight: 500;
+      color: #000;
+      line-height: 1.2;
+    }
+
+    .tg-meta {
+      font-size: 13px;
+      font-weight: 400;
+      color: #929292;
+      line-height: 1.2;
+      margin-top: 2px;
+    }
+  </style>
 </head>
 <body>
 
@@ -24,12 +59,15 @@
 
       <!-- Center: Avatar + Title + Meta -->
       <div class="tg-header-center">
+        <!-- Group Avatar / Logo -->
         <img src="assets/logo.jpg" alt="Profit Hunters Logo" class="tg-header-avatar" />
 
+        <!-- Title + Member Info -->
         <div class="tg-header-info">
           <div class="tg-title">🌐 Profit Hunters Chat</div>
           <div class="tg-meta">
-            <span id="tg-member-count">1,284 members</span> · <span id="tg-online-count">128 online</span>
+            <span id="tg-member-count">1,284 members</span> · 
+            <span id="tg-online-count">128 online</span>
           </div>
         </div>
       </div>
@@ -41,9 +79,7 @@
     </header>
 
     <!-- Pin Banner (populated dynamically by interactions.js after admin pins broadcast) -->
-    <div id="tg-pin-banner" class="tg-pin-banner hidden" role="region" aria-live="polite">
-      <!-- Sticker shown first, then transforms into full banner -->
-    </div>
+    <div id="tg-pin-banner" class="tg-pin-banner hidden" role="region" aria-live="polite"></div>
 
     <!-- Post Preview / System message -->
     <div id="tg-post-preview" class="tg-post-preview" aria-hidden="false">
