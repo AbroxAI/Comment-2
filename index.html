@@ -10,66 +10,89 @@
 
   <!-- Minimal critical styles -->
   <style>
-    html, body { height: 100dvh; margin:0; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+    html, body { height:100dvh; margin:0; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; -webkit-font-smoothing: antialiased; }
     .hidden { display:none !important; }
-    #tg-comments-app { display:flex; flex-direction:column; height:100dvh; color:#e6eef8; overflow:hidden; }
+
+    #tg-comments-app {
+      display:flex;
+      flex-direction:column;
+      height:100dvh;
+      background:var(--tg-bg-gradient);
+      color:var(--tg-text);
+      overflow:hidden;
+    }
   </style>
 </head>
 <body>
 
-<div id="tg-comments-app">
+  <div id="tg-comments-app">
 
-  <!-- Header -->
-  <header class="tg-header" role="banner">
-    <button class="tg-back-btn" aria-label="Back"><i data-lucide="arrow-left"></i></button>
+    <!-- Header -->
+    <header class="tg-header" role="banner">
+      <button class="tg-back-btn" aria-label="Back">
+        <i data-lucide="arrow-left"></i>
+      </button>
 
-    <div class="tg-header-center">
-      <img src="assets/logo.jpg" alt="Profit Hunters Logo" class="tg-header-avatar" />
-      <div class="tg-header-info">
-        <div class="tg-title">🌐 Profit Hunters Chat</div>
-        <div class="tg-meta" id="tg-meta-line">
-          1,284 members, 128 online
+      <div class="tg-header-center">
+        <img src="assets/logo.jpg" alt="Profit Hunters Logo" class="tg-header-avatar" />
+        <div class="tg-header-info">
+          <div class="tg-title">🌐 Profit Hunters Chat</div>
+          <div class="tg-meta" id="tg-meta-line">
+            1,284 members, 128 online
+          </div>
         </div>
+      </div>
+
+      <button class="tg-options-btn" aria-label="Options">
+        <i data-lucide="more-vertical"></i>
+      </button>
+    </header>
+
+    <!-- Floating Pin Banner -->
+    <div id="tg-pin-banner" class="tg-pin-banner hidden" role="region" aria-live="polite"></div>
+
+    <!-- Scrollable comments container -->
+    <main id="tg-comments-container" class="tg-comments-container" role="feed" aria-live="off">
+      <!-- bubble-renderer.js will append messages here -->
+    </main>
+
+    <!-- Floating new message jump pill -->
+    <div id="tg-jump-indicator" class="hidden">
+      <i data-lucide="chevron-down"></i>
+      <span>New messages</span>
+    </div>
+
+    <!-- Floating Pill Input Bar -->
+    <div class="tg-input-wrapper" role="form" aria-label="Send a message">
+      <div class="tg-input-bar">
+        <button id="tg-emoji-btn" class="tg-icon-btn" aria-label="Emoji picker">
+          <i data-lucide="smile"></i>
+        </button>
+
+        <input type="text" id="tg-comment-input" class="tg-comment-input" placeholder="Message…" autocomplete="off" />
+
+        <button id="tg-camera-btn" class="tg-icon-btn" aria-label="Camera">
+          <i data-lucide="camera"></i>
+        </button>
+
+        <button id="tg-send-btn" class="tg-send-btn hidden" aria-label="Send message">
+          <i data-lucide="send"></i>
+        </button>
       </div>
     </div>
 
-    <button class="tg-options-btn" aria-label="Options"><i data-lucide="more-vertical"></i></button>
-  </header>
-
-  <!-- Pin Banner -->
-  <div id="tg-pin-banner" class="tg-pin-banner hidden" role="region" aria-live="polite"></div>
-
-  <!-- Comments Container -->
-  <main id="tg-comments-container" class="tg-comments-container" role="feed" aria-live="off"></main>
-
-  <!-- Jump Indicator -->
-  <div id="tg-jump-indicator" class="hidden" aria-hidden="true">
-    <i data-lucide="chevron-down"></i>
-    <span>New messages</span>
   </div>
 
-  <!-- Floating Pill Input Bar -->
-  <div class="tg-input-wrapper" role="form" aria-label="Send a message">
-    <div class="tg-input-bar">
-      <button id="tg-emoji-btn" class="tg-icon-btn" aria-label="Emoji picker"><i data-lucide="smile"></i></button>
-      <input type="text" id="tg-comment-input" class="tg-comment-input" placeholder="Message…" autocomplete="off" />
-      <button id="tg-camera-btn" class="tg-icon-btn" aria-label="Camera"><i data-lucide="camera"></i></button>
-      <button id="tg-send-btn" class="tg-send-btn hidden" aria-label="Send message"><i data-lucide="send"></i></button>
-    </div>
-  </div>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>lucide.createIcons();</script>
 
-</div>
-
-<!-- Lucide Icons -->
-<script src="https://unpkg.com/lucide@latest"></script>
-<script>lucide.createIcons();</script>
-
-<!-- Modular JS -->
-<script src="identity-personas.js"></script>
-<script src="bubble-renderer.js"></script>
-<script src="realism-engine-v11.js"></script>
-<script src="interactions.js"></script>
-<script src="app.js"></script>
+  <!-- Modular JS -->
+  <script src="identity-personas.js"></script>
+  <script src="bubble-renderer.js"></script>
+  <script src="realism-engine-v11.js"></script>
+  <script src="interactions.js"></script>
+  <script src="app.js"></script>
 
 </body>
 </html>
