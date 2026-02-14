@@ -2,25 +2,28 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Abrox – Profit Hunters Chat</title>
 
-  <!-- External CSS (modular, includes dark theme, bubble, input, header) -->
+  <!-- External CSS (Telegram Dark Theme accurate) -->
   <link rel="stylesheet" href="widget.css" />
 
-  <!-- Minimal critical styles to prevent layout flash -->
+  <!-- Minimal critical layout to avoid flash -->
   <style>
-    html, body { height:100dvh; margin:0; font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; -webkit-font-smoothing:antialiased; }
-    #tg-comments-app { display:flex; flex-direction:column; height:100dvh; background:#fff; }
-    .hidden { display:none !important; }
+    html, body {
+      height: 100dvh;
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .hidden { display: none !important; }
+    #tg-comments-app { height: 100dvh; display: flex; flex-direction: column; }
   </style>
 </head>
 <body>
 
   <div id="tg-comments-app" class="tg-dark">
-
-    <!-- Background / decorative layer -->
-    <div class="tg-bg-layer" aria-hidden="true"></div>
 
     <!-- Header -->
     <header class="tg-header" role="banner">
@@ -30,6 +33,7 @@
 
       <div class="tg-header-center">
         <img src="assets/logo.jpg" alt="Profit Hunters Logo" class="tg-header-avatar" />
+
         <div class="tg-header-info">
           <div class="tg-title">🌐 Profit Hunters Chat</div>
           <div class="tg-meta" id="tg-meta-line">1,284 members, 128 online</div>
@@ -42,34 +46,32 @@
     </header>
 
     <!-- Pin Banner -->
-    <div id="tg-pin-banner" class="tg-pin-banner hidden" role="region" aria-live="polite"></div>
+    <div id="tg-pin-banner" class="tg-pin-banner hidden"></div>
 
-    <!-- Post preview -->
-    <div id="tg-post-preview" class="tg-post-preview" aria-hidden="true"></div>
+    <!-- Scrollable Comments -->
+    <main id="tg-comments-container" class="tg-comments-container" role="feed"></main>
 
-    <!-- Scrollable comments container -->
-    <main id="tg-comments-container" class="tg-comments-container" role="feed" aria-live="off"></main>
-
-    <!-- New messages jump pill -->
-    <div id="tg-jump-indicator" class="hidden" aria-hidden="true">
+    <!-- New Messages Jump Indicator -->
+    <div id="tg-jump-indicator" class="hidden">
       <i data-lucide="chevron-down"></i>
       <span>New messages</span>
     </div>
 
-    <!-- Floating pill input bar -->
+    <!-- Floating Pill Input -->
     <div class="tg-input-wrapper" role="form" aria-label="Send a message">
       <div class="tg-input-bar">
-        <button id="tg-emoji-btn" class="tg-icon-btn" aria-label="Emoji picker" type="button">
+        <button id="tg-emoji-btn" class="tg-icon-btn" aria-label="Emoji picker">
           <i data-lucide="smile"></i>
         </button>
 
-        <input type="text" id="tg-comment-input" class="tg-comment-input" placeholder="Message…" autocomplete="off" />
+        <input type="text" id="tg-comment-input" class="tg-comment-input"
+               placeholder="Message…" autocomplete="off" />
 
-        <button id="tg-camera-btn" class="tg-icon-btn" aria-label="Camera" type="button">
+        <button id="tg-camera-btn" class="tg-icon-btn" aria-label="Camera upload">
           <i data-lucide="camera"></i>
         </button>
 
-        <button id="tg-send-btn" class="tg-send-btn hidden" aria-label="Send message" type="button">
+        <button id="tg-send-btn" class="tg-send-btn hidden" aria-label="Send message">
           <i data-lucide="send"></i>
         </button>
       </div>
@@ -77,11 +79,11 @@
 
   </div>
 
-  <!-- Lucide icons -->
+  <!-- Lucide Icons (required for all icons) -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <script>lucide.createIcons();</script>
 
-  <!-- Modular JS -->
+  <!-- Modular JS (in correct order) -->
   <script src="identity-personas.js"></script>
   <script src="bubble-renderer.js"></script>
   <script src="realism-engine-v11.js"></script>
