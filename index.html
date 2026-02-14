@@ -1,126 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Abrox – Profit Hunters Chat</title>
 
-  <!-- CSS -->
+  <!-- External CSS (keeps modular) -->
   <link rel="stylesheet" href="widget.css" />
+
+  <!-- Minimal critical styles so layout is correct even before widget.css -->
   <style>
-    /* --- Telegram-accurate header --- */
+    :root{
+      --tg-blue: #0088ff;
+      --tg-gray-meta: #888888;
+      --tg-header-height: 56px;
+      --tg-avatar-size: 36px;
+      --tg-title-size: 16px;
+      --tg-meta-size: 13px;
+      --tg-input-height: 40px;
+      --tg-input-radius: 20px;
+      --tg-send-size: 36px;
+      --tg-icon-size: 20px;
+      --tg-gap: 10px;
+    }
+
+    /* App layout — crucial: keeps input at bottom */
+    html,body { height:100%; margin:0; }
+    #tg-comments-app {
+      display:flex;
+      flex-direction:column;
+      height:100vh;
+      background:#fff;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    /* Header */
     .tg-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 56px;
-      padding: 0 12px;
-      background-color: #fff;
-      border-bottom: 1px solid #e5e5e5;
-      position: sticky;
-      top: 0;
-      z-index: 10;
+      height: var(--tg-header-height);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 14px;
+      border-bottom:1px solid #e5e5e5;
+      background:#fff;
+      position:sticky;
+      top:0;
+      z-index:20;
     }
-
-    .tg-back-btn,
-    .tg-options-btn {
-      background: none;
-      border: none;
-      display: flex;
-      align-items: center;
-      font-size: 20px;
-      color: #555;
-      cursor: pointer;
+    .tg-back-btn, .tg-options-btn {
+      width:40px; height:40px;
+      display:flex; align-items:center; justify-content:center;
+      background:none; border:none; cursor:pointer;
+      font-size: var(--tg-icon-size); color:#555;
     }
-
     .tg-header-center {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex: 1;
-      margin: 0 12px;
+      display:flex; align-items:center; gap:var(--tg-gap); flex:1; margin:0 12px;
+      min-width:0;
     }
-
     .tg-header-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
+      width:var(--tg-avatar-size); height:var(--tg-avatar-size);
+      border-radius:50%; object-fit:cover;
+      flex-shrink:0;
     }
-
-    .tg-header-info {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
+    .tg-header-info { display:flex; flex-direction:column; justify-content:center; min-width:0; }
     .tg-title {
-      font-size: 16px;
-      font-weight: 500;
-      color: #000;
-      line-height: 1.2;
+      font-size:var(--tg-title-size); font-weight:600; color:#000;
+      line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
     }
-
     .tg-meta {
-      font-size: 12px;
-      color: #888;
-      line-height: 1.2;
+      font-size:var(--tg-meta-size); color:var(--tg-gray-meta); margin-top:2px;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
     }
 
-    /* --- Input bar --- */
-    .tg-input-wrapper {
-      position: sticky;
-      bottom: 0;
-      background: #fff;
-      border-top: 1px solid #e5e5e5;
-      padding: 8px 12px;
-      z-index: 5;
-    }
-
-    .tg-input-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .tg-icon-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 20px;
-      color: #555;
-    }
-
-    .tg-comment-input {
-      flex: 1;
-      padding: 8px 12px;
-      border-radius: 20px;
-      border: 1px solid #ccc;
-      outline: none;
-    }
-
-    .tg-send-btn {
-      background: #0088ff;
-      border-radius: 50%;
-      width: 36px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      border: none;
-      cursor: pointer;
-    }
-
-    /* --- Pin banner --- */
+    /* Pin banner */
     .tg-pin-banner {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      background: #f5f5f5;
-      border-left: 3px solid #0088ff;
-      font-size: 13px;
+      display:flex; align-items:center; gap:8px;
+      padding:8px 12px; background:#f5f5f5; border-left:3px solid var(--tg-blue);
+      font-size:13px; box-sizing:border-box;
+    }
+    .hidden { display:none !important; }
+
+    /* Comments container (scrollable) */
+    .tg-comments-container {
+      flex:1 1 auto;
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+      padding:12px 0;
+      box-sizing:border-box;
+      background: linear-gradient(180deg,#fff,#fbfdff);
+    }
+    /* ensure last bubble won't be covered by input */
+    .tg-comments-container::after {
+      content:""; display:block; height:84px;
+    }
+
+    /* New message jump indicator (Telegram style pill) */
+    #tg-jump-indicator {
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom: calc(var(--tg-input-height) + 64px);
+      background:var(--tg-blue);
+      color:#fff;
+      padding:6px 12px;
+      border-radius:18px;
+      font-size:13px;
+      display:flex;
+      gap:8px;
+      align-items:center;
+      box-shadow:0 6px 18px rgba(0,0,0,.12);
+      z-index:999;
+      cursor:pointer;
+    }
+    #tg-jump-indicator.hidden { display:none; }
+
+    /* Input wrapper fixed as last flex item */
+    .tg-input-wrapper {
+      flex-shrink:0;
+      padding:8px 12px;
+      border-top:1px solid #e5e5e5;
+      background:#fff;
+      box-sizing:border-box;
+    }
+    .tg-input-bar {
+      display:flex; align-items:center; gap:8px;
+    }
+    .tg-icon-btn {
+      background:none; border:none; padding:6px; cursor:pointer;
+      width:36px; height:36px; display:flex; align-items:center; justify-content:center;
+      font-size:var(--tg-icon-size); color:#555;
+    }
+    .tg-comment-input {
+      flex:1; height:var(--tg-input-height); border-radius:var(--tg-input-radius);
+      border:1px solid #ddd; padding:8px 12px; font-size:15px; outline:none;
+    }
+    .tg-send-btn {
+      width:var(--tg-send-size); height:var(--tg-send-size); border-radius:50%;
+      background:var(--tg-blue); color:#fff; border:none; display:flex;
+      align-items:center; justify-content:center; cursor:pointer;
     }
   </style>
 </head>
@@ -128,81 +147,85 @@
 
   <div id="tg-comments-app">
 
-    <!-- Background Layer -->
+    <!-- Background / decorative layer -->
     <div class="tg-bg-layer" aria-hidden="true"></div>
 
     <!-- Header -->
     <header class="tg-header" role="banner">
+      <!-- Back -->
       <button class="tg-back-btn" aria-label="Back">
         <i data-lucide="arrow-left"></i>
       </button>
 
+      <!-- Avatar + title + meta -->
       <div class="tg-header-center">
         <img src="assets/logo.jpg" alt="Profit Hunters Logo" class="tg-header-avatar" />
         <div class="tg-header-info">
           <div class="tg-title">🌐 Profit Hunters Chat</div>
           <div class="tg-meta">
-            <span id="tg-member-count">1,284 members</span> · <span id="tg-online-count">128 online</span>
+            <span id="tg-member-count">1,284 members</span> ·
+            <span id="tg-online-count">128 online</span>
           </div>
         </div>
       </div>
 
+      <!-- 3-dot options -->
       <button class="tg-options-btn" aria-label="Options">
         <i data-lucide="more-vertical"></i>
       </button>
     </header>
 
-    <!-- Pin Banner -->
+    <!-- Pin Banner (hidden by default; populated by interactions.js) -->
     <div id="tg-pin-banner" class="tg-pin-banner hidden" role="region" aria-live="polite">
-      <!-- Sticker -> transforms into full banner via interactions.js -->
+      <!-- interactions.js will inject sticker -> full banner -->
     </div>
 
-    <!-- Post Preview / System message -->
+    <!-- Optional system/post preview -->
     <div id="tg-post-preview" class="tg-post-preview" aria-hidden="false">
-      <!-- Latest chat history shown here -->
+      <!-- realism-engine can render "latest community activity..." or last message summary -->
     </div>
 
-    <!-- Scrollable Comments -->
+    <!-- Scrollable comments container -->
     <main id="tg-comments-container" class="tg-comments-container" role="feed" aria-live="off">
-      <!-- Bubbles appended via bubble-renderer.js & realism-engine-v11.js -->
+      <!-- bubble-renderer.js appends message bubbles here -->
     </main>
 
-    <!-- New Messages Notification -->
-    <button id="tg-new-comments" class="hidden tg-new-comments" aria-hidden="true">
-      ↓ New messages
-    </button>
+    <!-- New messages jump pill (Telegram style) -->
+    <div id="tg-jump-indicator" class="hidden" aria-hidden="true">
+      <i data-lucide="chevron-down"></i>
+      <span>New messages</span>
+    </div>
 
-    <!-- Input Bar -->
+    <!-- Input bar -->
     <div class="tg-input-wrapper" role="form" aria-label="Send a message">
       <div class="tg-input-bar">
-        <button class="tg-icon-btn" data-type="emoji" aria-label="Emoji picker">
+        <!-- Emoji (always visible) -->
+        <button id="tg-emoji-btn" class="tg-icon-btn" aria-label="Emoji picker" type="button">
           <i data-lucide="smile"></i>
         </button>
 
+        <!-- Text input -->
         <input type="text" id="tg-comment-input" class="tg-comment-input" placeholder="Message…" autocomplete="off" />
 
-        <button id="tg-send-btn" class="tg-send-btn" aria-label="Send message">
-          <i data-lucide="send"></i>
+        <!-- Camera / attach (visible when input empty) -->
+        <button id="tg-camera-btn" class="tg-icon-btn" aria-label="Camera" type="button">
+          <i data-lucide="camera"></i>
         </button>
 
-        <div class="tg-right-buttons">
-          <button class="tg-icon-btn" data-type="media" aria-label="Upload media">
-            <i data-lucide="camera"></i>
-          </button>
-          <button class="tg-icon-btn" data-type="other-media" aria-label="Other media">
-            <i data-lucide="image"></i>
-          </button>
-        </div>
+        <!-- Send (hidden until typing) -->
+        <button id="tg-send-btn" class="tg-send-btn hidden" aria-label="Send message" type="button">
+          <i data-lucide="send"></i>
+        </button>
       </div>
     </div>
 
   </div>
 
-  <!-- Lucide Icons -->
+  <!-- Lucide icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <script>lucide.createIcons();</script>
 
-  <!-- Modular JS -->
+  <!-- Modular JS (load order preserved) -->
   <script src="identity-personas.js"></script>
   <script src="bubble-renderer.js"></script>
   <script src="realism-engine-v11.js"></script>
