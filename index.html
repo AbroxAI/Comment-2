@@ -8,83 +8,72 @@
   <!-- External CSS -->
   <link rel="stylesheet" href="widget.css" />
 
-  <!-- Minimal critical styles -->
+  <!-- Minimal critical styles for layout -->
   <style>
-    html,body{height:100dvh;margin:0;}
+    html,body { height:100dvh; margin:0; font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+    #tg-comments-app { display:flex; flex-direction:column; height:100dvh; }
   </style>
 </head>
 <body>
 
-  <div id="tg-comments-app">
+<div id="tg-comments-app" class="tg-dark">
 
-    <!-- Background / decorative layer -->
-    <div class="tg-bg-layer" aria-hidden="true"></div>
+  <!-- Background -->
+  <div class="tg-bg-layer" aria-hidden="true"></div>
 
-    <!-- Header -->
-    <header class="tg-header" role="banner">
-      <button class="tg-back-btn" aria-label="Back">
-        <i data-lucide="arrow-left"></i>
-      </button>
-
-      <div class="tg-header-center">
-        <img src="assets/logo.jpg" alt="Profit Hunters Logo" class="tg-header-avatar" />
-        <div class="tg-header-info">
-          <div class="tg-title">🌐 Profit Hunters Chat</div>
-          <!-- Member + Online (Telegram style) -->
-          <div class="tg-meta" id="tg-meta-line">
-            1,284 members, 128 online
-          </div>
-        </div>
-      </div>
-
-      <button class="tg-options-btn" aria-label="Options">
-        <i data-lucide="more-vertical"></i>
-      </button>
-    </header>
-
-    <!-- Pin Banner (hidden; modular) -->
-    <div id="tg-pin-banner" class="tg-pin-banner hidden" role="region" aria-live="polite"></div>
-
-    <!-- Optional post preview -->
-    <div id="tg-post-preview" class="tg-post-preview" aria-hidden="false"></div>
-
-    <!-- Scrollable comments container -->
-    <main id="tg-comments-container" class="tg-comments-container" role="feed" aria-live="off"></main>
-
-    <!-- New messages jump pill -->
-    <div id="tg-jump-indicator" class="hidden" aria-hidden="true">
-      <i data-lucide="chevron-down"></i>
-      <span>New messages</span>
-    </div>
-
-    <!-- Input bar -->
-    <div class="tg-input-wrapper" role="form" aria-label="Send a message">
-      <div class="tg-input-bar">
-        <button id="tg-emoji-btn" class="tg-icon-btn" aria-label="Emoji picker" type="button">
-          <i data-lucide="smile"></i>
-        </button>
-        <input type="text" id="tg-comment-input" class="tg-comment-input" placeholder="Message…" autocomplete="off" />
-        <button id="tg-camera-btn" class="tg-icon-btn" aria-label="Camera" type="button">
-          <i data-lucide="camera"></i>
-        </button>
-        <button id="tg-send-btn" class="tg-send-btn hidden" aria-label="Send message" type="button">
-          <i data-lucide="send"></i>
-        </button>
+  <!-- Header -->
+  <header class="tg-header" role="banner">
+    <button class="tg-back-btn" aria-label="Back"><i data-lucide="arrow-left"></i></button>
+    <div class="tg-header-center">
+      <img src="assets/logo.jpg" alt="Profit Hunters Logo" class="tg-header-avatar" />
+      <div class="tg-header-info">
+        <div class="tg-title">🌐 Profit Hunters Chat</div>
+        <div class="tg-meta" id="tg-meta-line">1,284 members, 128 online</div>
       </div>
     </div>
+    <button class="tg-options-btn" aria-label="Options"><i data-lucide="more-vertical"></i></button>
+  </header>
 
+  <!-- Pin Banner (admin broadcast) -->
+  <div id="tg-pin-banner" class="tg-pin-banner hidden" role="region" aria-live="polite"></div>
+
+  <!-- Scrollable comments container -->
+  <main id="tg-comments-container" class="tg-comments-container" role="feed" aria-live="off"></main>
+
+  <!-- New messages jump indicator -->
+  <div id="tg-jump-indicator" class="hidden" aria-hidden="true">
+    <i data-lucide="chevron-down"></i>
+    <span>New messages</span>
   </div>
 
-  <!-- Lucide icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script>lucide.createIcons();</script>
+  <!-- Input bar -->
+  <div class="tg-input-wrapper" role="form" aria-label="Send a message">
+    <div class="tg-input-bar">
+      <button id="tg-emoji-btn" class="tg-icon-btn" aria-label="Emoji picker" type="button">
+        <i data-lucide="smile"></i>
+      </button>
+      <input type="text" id="tg-comment-input" class="tg-comment-input" placeholder="Message…" autocomplete="off" />
+      <button id="tg-camera-btn" class="tg-icon-btn" aria-label="Camera" type="button">
+        <i data-lucide="camera"></i>
+      </button>
+      <button id="tg-send-btn" class="tg-send-btn hidden" aria-label="Send message" type="button">
+        <i data-lucide="send"></i>
+      </button>
+    </div>
+  </div>
 
-  <!-- Modular JS -->
-  <script src="identity-personas.js"></script>
-  <script src="bubble-renderer.js"></script>
-  <script src="realism-engine-v11.js"></script>
-  <script src="interactions.js"></script>
-  <script src="app.js"></script>
+</div>
+
+<!-- Lucide icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>lucide.createIcons();</script>
+
+<!-- JS modules -->
+<script src="identity-personas.js"></script>
+<script src="bubble-renderer.js"></script>
+<script src="realism-engine-v11.js"></script>
+<script src="interactions.js"></script>
+<script src="app.js"></script>
 
 </body>
 </html>
