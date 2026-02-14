@@ -10,116 +10,71 @@
 
   <!-- Minimal critical styles -->
   <style>
-    :root{
-      --tg-blue: #2ea6ff;
-      --tg-header-height: 60px;
-      --tg-avatar-size: 40px;
-      --tg-title-size: 18px;
-      --tg-meta-size: 13px;
-      --tg-input-height: 44px;
-      --tg-input-radius: 22px;
-      --tg-send-size: 36px;
-      --tg-icon-size: 20px;
-      --tg-gap: 10px;
-    }
-
-    html,body {height:100dvh;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica Neue,Arial;-webkit-font-smoothing:antialiased;}
+    html,body{height:100dvh;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;-webkit-font-smoothing:antialiased;}
     .hidden{display:none!important;}
-
-    #tg-comments-app{display:flex;flex-direction:column;height:100dvh;background:var(--tg-bg-gradient);color:var(--tg-text)}
-
-    .tg-header{
-      height:var(--tg-header-height);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:0 14px;
-      position:sticky;
-      top:0;
-      z-index:30;
-      background:var(--tg-header-bg);
-    }
-
-    .tg-back-btn, .tg-options-btn{
-      width:40px; height:40px; display:flex; align-items:center; justify-content:center; border:none; background:none; cursor:pointer; color:var(--tg-text); font-size:var(--tg-icon-size);
-    }
-
-    .tg-header-center{
-      display:flex;
-      align-items:center;
-      gap:var(--tg-gap);
-      flex:1;
-      margin:0 12px;
-      min-width:0;
-    }
-
-    .tg-header-avatar{width:var(--tg-avatar-size);height:var(--tg-avatar-size);border-radius:50%;object-fit:cover;flex-shrink:0;}
-    .tg-title{font-size:var(--tg-title-size);font-weight:600;color:var(--tg-text);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .tg-meta{font-size:var(--tg-meta-size);color:var(--tg-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-
-    .tg-pin-banner{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#1f2c3a;border-left:3px solid var(--tg-accent);font-size:13px;}
-    .tg-pin-banner.hidden{display:none;}
-
-    .tg-comments-container{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px;position:relative;}
-    .tg-comments-container::after{content:"";display:block;height:calc(var(--tg-input-height)+44px);}
-
-    .tg-input-wrapper{flex-shrink:0;padding:8px 12px;border-top:1px solid rgba(255,255,255,0.05);background:var(--tg-input-bg);border-radius:var(--tg-input-radius);display:flex;align-items:center;}
-    .tg-input-bar{display:flex;align-items:center;gap:8px;width:100%;}
-    .tg-comment-input{flex:1;height:var(--tg-input-height);padding:0 16px;border-radius:var(--tg-input-radius);border:none;background:var(--tg-input-field);color:var(--tg-text);font-size:15px;outline:none;}
-    .tg-send-btn{width:var(--tg-send-size);height:var(--tg-send-size);border-radius:50%;background:var(--tg-accent);color:#fff;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;}
-    .tg-icon-btn{background:none;border:none;padding:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--tg-muted);}
+    #tg-comments-app{display:flex;flex-direction:column;height:100dvh;}
   </style>
 </head>
 <body>
 
-  <div id="tg-comments-app">
+<div id="tg-comments-app" class="tg-dark">
 
-    <!-- Header -->
-    <header class="tg-header" role="banner">
-      <button class="tg-back-btn" aria-label="Back"><i data-lucide="arrow-left"></i></button>
-      <div class="tg-header-center">
-        <img src="assets/logo.jpg" alt="Profit Hunters Logo" class="tg-header-avatar" />
-        <div class="tg-header-info">
-          <div class="tg-title">🌐 Profit Hunters Chat</div>
-          <div class="tg-meta" id="tg-meta-line">
-            1,284 members, 128 online
-          </div>
-        </div>
-      </div>
-      <button class="tg-options-btn" aria-label="Options"><i data-lucide="more-vertical"></i></button>
-    </header>
+  <!-- Background layer -->
+  <div class="tg-bg-layer" aria-hidden="true"></div>
 
-    <!-- Pin Banner -->
-    <div id="tg-pin-banner" class="tg-pin-banner hidden" role="region" aria-live="polite"></div>
-
-    <!-- Comments -->
-    <main id="tg-comments-container" class="tg-comments-container" role="feed" aria-live="off"></main>
-
-    <!-- Jump indicator -->
-    <div id="tg-jump-indicator" class="hidden" aria-hidden="true"><i data-lucide="chevron-down"></i><span>New messages</span></div>
-
-    <!-- Input bar -->
-    <div class="tg-input-wrapper" role="form" aria-label="Send a message">
-      <div class="tg-input-bar">
-        <button id="tg-emoji-btn" class="tg-icon-btn" aria-label="Emoji picker" type="button"><i data-lucide="smile"></i></button>
-        <input type="text" id="tg-comment-input" class="tg-comment-input" placeholder="Message…" autocomplete="off" />
-        <button id="tg-camera-btn" class="tg-icon-btn" aria-label="Camera" type="button"><i data-lucide="camera"></i></button>
-        <button id="tg-send-btn" class="tg-send-btn hidden" aria-label="Send message" type="button"><i data-lucide="send"></i></button>
+  <!-- Header -->
+  <header class="tg-header" role="banner">
+    <button class="tg-back-btn" aria-label="Back"><i data-lucide="arrow-left"></i></button>
+    <div class="tg-header-center">
+      <img src="assets/logo.jpg" alt="Profit Hunters Logo" class="tg-header-avatar" />
+      <div class="tg-header-info">
+        <div class="tg-title">🌐 Profit Hunters Chat</div>
+        <div class="tg-meta" id="tg-meta-line">1,284 members, 128 online</div>
       </div>
     </div>
+    <button class="tg-options-btn" aria-label="Options"><i data-lucide="more-vertical"></i></button>
+  </header>
 
+  <!-- Pin Banner -->
+  <div id="tg-pin-banner" class="tg-pin-banner hidden" role="region" aria-live="polite"></div>
+
+  <!-- Scrollable comments -->
+  <main id="tg-comments-container" class="tg-comments-container" role="feed" aria-live="off"></main>
+
+  <!-- Jump indicator -->
+  <div id="tg-jump-indicator" class="hidden" aria-hidden="true">
+    <i data-lucide="chevron-down"></i>
+    <span>New messages</span>
   </div>
 
-  <!-- Lucide icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script>lucide.createIcons();</script>
+  <!-- Floating Input Bar -->
+  <div class="tg-input-wrapper floating-pill" role="form" aria-label="Send a message">
+    <div class="tg-input-bar">
+      <button id="tg-emoji-btn" class="tg-icon-btn" aria-label="Emoji picker" type="button">
+        <i data-lucide="smile"></i>
+      </button>
+      <input type="text" id="tg-comment-input" class="tg-comment-input" placeholder="Message…" autocomplete="off" />
+      <button id="tg-camera-btn" class="tg-icon-btn" aria-label="Camera" type="button">
+        <i data-lucide="camera"></i>
+      </button>
+      <button id="tg-send-btn" class="tg-send-btn hidden" aria-label="Send message" type="button">
+        <i data-lucide="send"></i>
+      </button>
+    </div>
+  </div>
 
-  <!-- JS Modules -->
-  <script src="identity-personas.js"></script>
-  <script src="bubble-renderer.js"></script>
-  <script src="realism-engine-v11.js"></script>
-  <script src="interactions.js"></script>
-  <script src="app.js"></script>
+</div>
+
+<!-- Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>lucide.createIcons();</script>
+
+<!-- Modular JS -->
+<script src="identity-personas.js"></script>
+<script src="bubble-renderer.js"></script>
+<script src="realism-engine-v11.js"></script>
+<script src="interactions.js"></script>
+<script src="app.js"></script>
 
 </body>
 </html>
