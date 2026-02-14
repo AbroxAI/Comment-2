@@ -1,99 +1,94 @@
-// bubble-renderer.js
-// Responsible for rendering chat bubbles dynamically
+// bubble-renderer.js — modular Telegram-style chat bubbles
 
-const commentsContainer = document.getElementById('tg-comments-container');
+// Keep track of messages
+const tgCommentsContainer = document.getElementById("tg-comments-container");
 
 /**
- * Create a single message bubble
- * @param {Object} message - {id, sender, text, time, viewers, admin, pinned, avatar}
+ * Renders a single chat bubble
+ * @param {Object} message - message object
+ * @param {string} message.id - unique ID
+ * @param {string} message.sender - "admin" | "member"
+ * @param {string} message.name - display name
+ * @param {string} message.avatar - avatar URL
+ * @param {string} message.text - message text
+ * @param {string} message.timestamp - timestamp string
+ * @param {number} message.views - number of viewers
+ * @param {boolean} message.pinned - is pinned
  */
-function createBubble(message) {
-  const bubble = document.createElement('div');
-  bubble.classList.add('tg-bubble');
-
-  if (message.admin) bubble.classList.add('outgoing'); // admin messages to the right
-  else bubble.classList.add('incoming');
-
-  if (message.pinned) bubble.classList.add('pinned');
+function renderBubble(message) {
+  const bubble = document.createElement("div");
+  bubble.classList.add("tg-bubble");
+  bubble.classList.add(message.sender === "admin" ? "outgoing" : "incoming");
+  if (message.pinned) bubble.classList.add("pinned");
 
   // Avatar
-  const avatar = document.createElement('img');
-  avatar.classList.add('tg-bubble-avatar');
-  avatar.src = message.avatar || 'assets/default-avatar.jpg';
-  avatar.alt = message.sender;
+  const avatar = document.createElement("img");
+  avatar.src = message.avatar;
+  avatar.alt = message.name;
+  avatar.className = "tg-avatar";
 
-  // Bubble content
-  const content = document.createElement('div');
-  content.classList.add('tg-bubble-content');
+  // Content wrapper
+  const content = document.createElement("div");
+  content.className = "tg-bubble-content";
 
   // Sender name
-  if (message.sender) {
-    const senderName = document.createElement('div');
-    senderName.classList.add('tg-bubble-sender');
-    senderName.textContent = message.sender;
-    content.appendChild(senderName);
+  const sender = document.createElement("div");
+  sender.className = "tg-bubble-sender";
+  sender.textContent = message.name;
+
+  // Text
+  const text = document.createElement("div");
+  text.className = "tg-bubble-text";
+  text.textContent = message.text;
+
+  // Bubble meta (timestamp + viewers)
+  const meta = document.createElement("div");
+  meta.className = "tg-bubble-meta";
+
+  const ts = document.createElement("span");
+  ts.className = "tg-bubble-timestamp";
+  ts.textContent = message.timestamp;
+
+  const viewers = document.createElement("span");
+  viewers.className = "tg-bubble-viewers";
+  if (message.views > 0) {
+    viewers.innerHTML = `<i data-lucide="eye"></i> ${message.views}`;
   }
 
-  // Message text
-  const text = document.createElement('div');
-  text.classList.add('tg-bubble-text');
-  text.innerHTML = message.text;
+  meta.appendChild(ts);
+  if (message.views > 0) meta.appendChild(viewers);
+
+  content.appendChild(sender);
   content.appendChild(text);
-
-  // Bubble meta (time + viewers)
-  const meta = document.createElement('div');
-  meta.classList.add('tg-bubble-meta');
-
-  // Timestamp
-  const timestamp = document.createElement('span');
-  timestamp.classList.add('tg-bubble-timestamp');
-  timestamp.textContent = message.time || '';
-  meta.appendChild(timestamp);
-
-  // Viewer count with eye icon
-  if (message.viewers) {
-    const viewers = document.createElement('span');
-    viewers.classList.add('tg-bubble-viewers');
-    viewers.innerHTML = `<i data-lucide="eye"></i> ${message.viewers}`;
-    meta.appendChild(viewers);
-  }
-
   content.appendChild(meta);
 
-  // Append avatar + content in correct order
-  if (message.admin) {
+  if (message.sender === "admin") {
     bubble.appendChild(content);
-    bubble.appendChild(avatar);
+    bubble.appendChild(avatar); // admin on right
   } else {
     bubble.appendChild(avatar);
     bubble.appendChild(content);
   }
 
-  return bubble;
+  tgCommentsContainer.appendChild(bubble);
+
+  // Render Lucide icons
+  if (typeof lucide !== "undefined") lucide.createIcons();
 }
 
-/**
- * Render multiple messages
- * @param {Array} messages
- */
-function renderBubbles(messages) {
-  commentsContainer.innerHTML = '';
-  messages.forEach(msg => {
-    const bubble = createBubble(msg);
-    commentsContainer.appendChild(bubble);
-  });
-
-  // Scroll to bottom
-  commentsContainer.scrollTop = commentsContainer.scrollHeight;
-
-  // Recreate Lucide icons inside new bubbles
-  if (window.lucide) lucide.createIcons();
+// Example: render multiple messages
+function renderMessages(messages) {
+  messages.forEach(renderBubble);
 }
 
-// Example usage:
-// renderBubbles([
-//   { sender: "Alice", text: "Hello!", time: "12:45", viewers: 3, avatar:"assets/alice.jpg" },
-//   { sender: "Admin", text: "Pinned message here", time: "12:46", viewers: 128, admin:true, pinned:true }
-// ]);
+// Clear all bubbles
+function clearBubbles() {
+  tgCommentsContainer.innerHTML = "";
+}
 
-export { renderBubbles, createBubble };
+// Export for modular usage
+window.chatRenderer = {
+  renderBubble,
+  renderMessages,
+  clearBubbles
+};
