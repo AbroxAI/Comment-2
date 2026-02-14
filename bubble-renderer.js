@@ -1,112 +1,105 @@
 // bubble-renderer.js
-const commentsContainer = document.getElementById("tg-comments-container");
+
+const commentsContainer = document.getElementById('tg-comments-container');
 
 /**
- * Creates a chat bubble
- * @param {Object} message - message object
- * message = {
- *   id: string,
- *   sender: string,
- *   avatar: string,  // URL
- *   text: string,
- *   timestamp: Date,
- *   isAdmin: boolean
- * }
+ * Render a chat bubble
+ * @param {Object} msg
+ *   msg = {
+ *     sender: "username",
+ *     text: "message text",
+ *     type: "member" | "admin",
+ *     timestamp: Date object,
+ *     viewers: number,
+ *     pinned: boolean
+ *   }
  */
-function createBubble(message) {
-  const bubble = document.createElement("div");
-  bubble.classList.add("tg-bubble");
-  bubble.classList.toggle("tg-bubble-admin", message.isAdmin);
-  bubble.dataset.id = message.id;
+function renderBubble(msg) {
+  const bubble = document.createElement('div');
+  bubble.classList.add('tg-bubble');
+  bubble.classList.add(msg.type === 'admin' ? 'admin' : 'member');
+  if (msg.pinned) bubble.classList.add('pinned');
 
   // Avatar
-  const avatar = document.createElement("img");
-  avatar.classList.add("tg-bubble-avatar");
-  avatar.src = message.avatar;
-  avatar.alt = `${message.sender} avatar`;
+  const avatar = document.createElement('img');
+  avatar.src = msg.avatar || 'assets/avatar-placeholder.jpg';
+  avatar.alt = msg.sender;
+  avatar.classList.add('tg-bubble-avatar');
 
-  // Content
-  const content = document.createElement("div");
-  content.classList.add("tg-bubble-content");
+  // Bubble content
+  const content = document.createElement('div');
+  content.classList.add('tg-bubble-content');
 
   // Sender
-  const sender = document.createElement("div");
-  sender.classList.add("tg-bubble-sender");
-  sender.textContent = message.sender;
+  const sender = document.createElement('div');
+  sender.classList.add('tg-bubble-sender');
+  sender.textContent = msg.sender;
 
   // Message text
-  const text = document.createElement("div");
-  text.classList.add("tg-bubble-text");
-  text.textContent = message.text;
+  const text = document.createElement('div');
+  text.classList.add('tg-bubble-text');
+  text.textContent = msg.text;
 
-  // Timestamp
-  const timestamp = document.createElement("div");
-  timestamp.classList.add("tg-bubble-timestamp");
-  timestamp.textContent = formatTime(message.timestamp);
+  // Meta (timestamp + viewers)
+  const meta = document.createElement('div');
+  meta.classList.add('tg-bubble-meta');
 
-  // Append
+  const time = document.createElement('span');
+  time.classList.add('tg-bubble-timestamp');
+  time.textContent = formatTime(msg.timestamp);
+
+  const viewers = document.createElement('span');
+  viewers.classList.add('tg-bubble-viewers');
+  viewers.innerHTML = `<i data-lucide="eye"></i> ${msg.viewers || 0}`;
+
+  meta.appendChild(time);
+  meta.appendChild(viewers);
+
+  // Assemble
   content.appendChild(sender);
   content.appendChild(text);
-  content.appendChild(timestamp);
+  content.appendChild(meta);
+
   bubble.appendChild(avatar);
   bubble.appendChild(content);
 
-  return bubble;
-}
+  commentsContainer.appendChild(bubble);
 
-// Format time similar to Telegram style (HH:MM)
-function formatTime(date) {
-  const d = new Date(date);
-  const hours = d.getHours().toString().padStart(2, "0");
-  const minutes = d.getMinutes().toString().padStart(2, "0");
-  return `${hours}:${minutes}`;
+  // Scroll to bottom automatically
+  commentsContainer.scrollTop = commentsContainer.scrollHeight;
+
+  // Activate Lucide icons for the new bubble
+  if (window.lucide) lucide.createIcons();
 }
 
 /**
- * Render messages
- * @param {Array} messages - array of message objects
+ * Format Date to HH:MM
  */
-function renderBubbles(messages) {
-  messages.forEach(msg => {
-    const bubble = createBubble(msg);
-    commentsContainer.appendChild(bubble);
-  });
-
-  // Scroll to bottom after rendering
-  commentsContainer.scrollTop = commentsContainer.scrollHeight;
+function formatTime(date) {
+  if (!date) return '';
+  const h = date.getHours().toString().padStart(2,'0');
+  const m = date.getMinutes().toString().padStart(2,'0');
+  return `${h}:${m}`;
 }
 
-// Example usage with historical + live messages
-const demoMessages = [
-  {
-    id: "1",
-    sender: "Admin",
-    avatar: "assets/admin.jpg",
-    text: "Welcome to Profit Hunters Chat! 📌",
-    timestamp: new Date("2026-02-14T10:00:00"),
-    isAdmin: true
-  },
-  {
-    id: "2",
-    sender: "Alice",
-    avatar: "assets/member1.jpg",
-    text: "Excited to join the group!",
-    timestamp: new Date("2026-02-14T10:02:00"),
-    isAdmin: false
-  },
-  {
-    id: "3",
-    sender: "Bob",
-    avatar: "assets/member2.jpg",
-    text: "Hello everyone!",
-    timestamp: new Date("2026-02-14T10:05:00"),
-    isAdmin: false
-  }
-];
+/**
+ * Clear all bubbles
+ */
+function clearBubbles() {
+  commentsContainer.innerHTML = '';
+}
 
-// Initial render
-renderBubbles(demoMessages);
+/**
+ * Example usage:
+ * renderBubble({
+ *   sender: "Admin",
+ *   text: "Welcome to the chat!",
+ *   type: "admin",
+ *   timestamp: new Date(),
+ *   viewers: 12,
+ *   pinned: true,
+ *   avatar: "assets/admin-avatar.jpg"
+ * });
+ */
 
-// Export for other modules
-window.renderBubbles = renderBubbles;
-window.createBubble = createBubble;
+export { renderBubble, clearBubbles };
