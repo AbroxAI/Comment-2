@@ -1,85 +1,119 @@
-// bubble-renderer.js
+// ==============================
+// BUBBLE-RENDERER.JS
+// ==============================
 
-const commentsContainer = document.getElementById("tg-comments-container");
+/**
+ * Append a message bubble to the comments container
+ * @param {Object} messageData - message info
+ *   { senderName, avatarUrl, text, isAdmin, timestamp, viewers }
+ */
+function addBubble(messageData) {
+  const container = document.getElementById("tg-comments-container");
+  if (!container) return;
 
-// Utility to format timestamp
-function formatTimestamp(date = new Date()) {
-  const hours = date.getHours().toString().padStart(2,"0");
-  const minutes = date.getMinutes().toString().padStart(2,"0");
-  return `${hours}:${minutes}`;
-}
-
-// Render a message bubble
-function renderBubble({ sender, text, timestamp = new Date(), viewers = 0, pinned = false, outgoing = false }) {
   const bubble = document.createElement("div");
   bubble.classList.add("tg-bubble");
-  bubble.classList.add(outgoing ? "outgoing" : "incoming");
-  if (pinned) bubble.classList.add("pinned");
+  bubble.classList.add(messageData.isAdmin ? "admin" : "member");
+  if (messageData.isPinned) bubble.classList.add("pinned");
 
-  // Avatar (only for incoming)
-  if (!outgoing) {
-    const avatar = document.createElement("img");
-    avatar.src = sender.avatar || "assets/default-avatar.jpg";
-    avatar.classList.add("tg-bubble-avatar");
-    bubble.appendChild(avatar);
-  }
+  // Avatar
+  const avatar = document.createElement("img");
+  avatar.className = "tg-bubble-avatar";
+  avatar.src = messageData.avatarUrl || "assets/default-avatar.jpg";
+  avatar.alt = messageData.senderName || "User";
 
-  // Bubble content
+  // Content
   const content = document.createElement("div");
-  content.classList.add("tg-bubble-content");
+  content.className = "tg-bubble-content";
 
-  // Sender name (optional)
-  if (!outgoing) {
-    const senderEl = document.createElement("div");
-    senderEl.classList.add("tg-bubble-sender");
-    senderEl.textContent = sender.name || "Member";
-    content.appendChild(senderEl);
+  // Sender name
+  if (!messageData.isAdmin) {
+    const sender = document.createElement("div");
+    sender.className = "tg-bubble-sender";
+    sender.textContent = messageData.senderName || "User";
+    content.appendChild(sender);
   }
 
   // Message text
-  const textEl = document.createElement("div");
-  textEl.classList.add("tg-bubble-text");
-  textEl.textContent = text;
-  content.appendChild(textEl);
+  const text = document.createElement("div");
+  text.className = "tg-bubble-text";
+  text.textContent = messageData.text || "";
+  content.appendChild(text);
 
   // Meta (timestamp + viewers)
-  const metaEl = document.createElement("div");
-  metaEl.classList.add("tg-bubble-meta");
+  const meta = document.createElement("div");
+  meta.className = "tg-bubble-meta";
 
-  const ts = document.createElement("span");
-  ts.classList.add("tg-bubble-timestamp");
-  ts.textContent = formatTimestamp(timestamp);
-  metaEl.appendChild(ts);
-
-  if (!outgoing) {
-    const viewersEl = document.createElement("span");
-    viewersEl.classList.add("tg-bubble-viewers");
-    viewersEl.innerHTML = `<i data-lucide="eye"></i> ${viewers}`;
-    metaEl.appendChild(viewersEl);
+  // Timestamp
+  if (messageData.timestamp) {
+    const ts = document.createElement("span");
+    ts.className = "tg-bubble-timestamp";
+    ts.textContent = messageData.timestamp;
+    meta.appendChild(ts);
   }
 
-  content.appendChild(metaEl);
-  bubble.appendChild(content);
+  // Viewers (eye icon + count)
+  if (messageData.viewers !== undefined) {
+    const viewers = document.createElement("span");
+    viewers.className = "tg-bubble-viewers";
+    viewers.innerHTML = `<i data-lucide="eye"></i> ${messageData.viewers}`;
+    meta.appendChild(viewers);
+  }
 
-  commentsContainer.appendChild(bubble);
-  bubble.scrollIntoView({ behavior: "smooth", block: "end" });
+  if (meta.children.length) content.appendChild(meta);
 
-  // Refresh lucide icons
-  lucide.createIcons();
+  // Assemble bubble
+  if (messageData.isAdmin) {
+    bubble.appendChild(content);
+    bubble.appendChild(avatar); // admin avatar on right
+  } else {
+    bubble.appendChild(avatar);
+    bubble.appendChild(content);
+  }
+
+  container.appendChild(bubble);
+
+  // Scroll to bottom
+  container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+
+  // Activate lucide icons
+  if (window.lucide) lucide.createIcons();
 }
 
-// Example usage
-renderBubble({
-  sender: { name: "Admin", avatar: "assets/logo.jpg" },
-  text: "Welcome to Profit Hunters! 🎉",
-  viewers: 128,
-  pinned: true,
-  outgoing: false
-});
+// ==============================
+// Optional helper: add a typing bubble
+// ==============================
+function addTypingBubble(senderName, avatarUrl) {
+  const container = document.getElementById("tg-comments-container");
+  if (!container) return;
 
-renderBubble({
-  sender: { name: "You" },
-  text: "Glad to be here!",
-  viewers: 0,
-  outgoing: true
-});
+  const bubble = document.createElement("div");
+  bubble.className = "tg-bubble typing-bubble member";
+
+  const avatar = document.createElement("img");
+  avatar.className = "tg-bubble-avatar";
+  avatar.src = avatarUrl || "assets/default-avatar.jpg";
+  avatar.alt = senderName || "User";
+
+  const content = document.createElement("div");
+  content.className = "tg-bubble-content";
+
+  const dots = document.createElement("div");
+  dots.className = "typing-dots";
+  dots.innerHTML = '<span></span><span></span><span></span>';
+
+  content.appendChild(dots);
+  bubble.appendChild(avatar);
+  bubble.appendChild(content);
+  container.appendChild(bubble);
+
+  container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+
+  return bubble; // return to allow removal later
+}
+
+// ==============================
+// Expose globally
+// ==============================
+window.addBubble = addBubble;
+window.addTypingBubble = addTypingBubble;
