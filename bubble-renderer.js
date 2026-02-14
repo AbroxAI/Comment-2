@@ -1,112 +1,82 @@
-// bubble-renderer.js — Modular Telegram-style message rendering
+// bubble-renderer.js — Render chat bubbles dynamically
 
 /**
- * Renders a single chat message bubble
- * @param {Object} msg - Message object
- *   {
- *     id: string,
- *     sender: string,
- *     avatar: string,
- *     text: string,
- *     timestamp: Date | string,
- *     viewers: number,
- *     type: 'incoming' | 'outgoing',
- *     pinned: boolean
- *   }
+ * @param {Object} data
+ * data.sender: string
+ * data.text: string
+ * data.type: 'incoming' | 'outgoing'
+ * data.timestamp: optional, Date or string
+ * data.viewers: optional, number
+ * data.pinned: optional, boolean
  */
-function renderBubble(msg) {
-  const container = document.getElementById('tg-comments-container');
-  if (!container) return;
-
-  // Bubble wrapper
+function renderBubble(data) {
   const bubble = document.createElement('div');
-  bubble.classList.add('tg-bubble', msg.type);
-  if (msg.pinned) bubble.classList.add('pinned');
+  bubble.classList.add('tg-bubble', data.type);
+  if (data.pinned) bubble.classList.add('pinned');
 
   // Avatar
   const avatar = document.createElement('img');
-  avatar.src = msg.avatar || 'assets/default-avatar.png';
-  avatar.alt = msg.sender;
   avatar.classList.add('tg-bubble-avatar');
+  avatar.src = data.avatar || 'assets/default-avatar.png';
+  avatar.alt = data.sender || 'Member';
+  bubble.appendChild(avatar);
 
   // Bubble content
   const content = document.createElement('div');
   content.classList.add('tg-bubble-content');
 
   // Sender
-  const sender = document.createElement('div');
-  sender.classList.add('tg-bubble-sender');
-  sender.textContent = msg.sender;
+  const senderEl = document.createElement('div');
+  senderEl.classList.add('tg-bubble-sender');
+  senderEl.textContent = data.sender || 'Member';
+  content.appendChild(senderEl);
 
   // Text
-  const text = document.createElement('div');
-  text.classList.add('tg-bubble-text');
-  text.textContent = msg.text;
+  const textEl = document.createElement('div');
+  textEl.classList.add('tg-bubble-text');
+  textEl.textContent = data.text || '';
+  content.appendChild(textEl);
 
   // Meta (timestamp + viewers)
-  const meta = document.createElement('div');
-  meta.classList.add('tg-bubble-meta');
+  const metaEl = document.createElement('div');
+  metaEl.classList.add('tg-bubble-meta');
 
-  // Timestamp
-  const ts = document.createElement('span');
-  ts.classList.add('tg-bubble-timestamp');
-  ts.textContent = formatTimestamp(msg.timestamp);
-
-  meta.appendChild(ts);
-
-  // Viewers (eye icon)
-  if (msg.viewers !== undefined) {
-    const viewers = document.createElement('span');
-    viewers.classList.add('tg-bubble-viewers');
-
-    const eye = document.createElement('i');
-    eye.setAttribute('data-lucide', 'eye'); // requires lucide
-    viewers.appendChild(eye);
-
-    const count = document.createElement('span');
-    count.textContent = msg.viewers;
-    viewers.appendChild(count);
-
-    meta.appendChild(viewers);
-    // Create lucide icons
-    if (window.lucide) lucide.createIcons();
+  if (data.timestamp) {
+    const tsEl = document.createElement('span');
+    tsEl.classList.add('tg-bubble-timestamp');
+    tsEl.textContent = formatTimestamp(data.timestamp);
+    metaEl.appendChild(tsEl);
   }
 
-  content.appendChild(sender);
-  content.appendChild(text);
-  content.appendChild(meta);
+  if (data.viewers !== undefined) {
+    const viewersEl = document.createElement('span');
+    viewersEl.classList.add('tg-bubble-viewers');
+    viewersEl.innerHTML = `<i data-lucide="eye"></i> ${data.viewers}`;
+    metaEl.appendChild(viewersEl);
+  }
 
-  bubble.appendChild(avatar);
+  if (metaEl.childElementCount > 0) {
+    content.appendChild(metaEl);
+  }
+
   bubble.appendChild(content);
 
-  container.appendChild(bubble);
+  // Initialize Lucide icons for dynamic bubbles
+  if (window.lucide) lucide.createIcons({ parent: bubble });
 
-  // Scroll to bottom
-  container.scrollTop = container.scrollHeight;
+  return bubble;
 }
 
-/**
- * Format timestamp similar to Telegram
- * @param {Date|string} ts
- */
-function formatTimestamp(ts) {
-  const date = ts instanceof Date ? ts : new Date(ts);
+// Timestamp formatter
+function formatTimestamp(input) {
+  const date = input instanceof Date ? input : new Date(input);
   const hours = date.getHours();
   const minutes = date.getMinutes();
-  const h = hours % 12 || 12;
   const ampm = hours >= 12 ? 'PM' : 'AM';
+  const h = hours % 12 || 12;
   const m = minutes < 10 ? '0' + minutes : minutes;
   return `${h}:${m} ${ampm}`;
 }
 
-/**
- * Render multiple messages
- * @param {Array} messages
- */
-function renderMessages(messages) {
-  messages.forEach(msg => renderBubble(msg));
-}
-
-// Export globally
+// Expose globally for app.js
 window.renderBubble = renderBubble;
-window.renderMessages = renderMessages;
