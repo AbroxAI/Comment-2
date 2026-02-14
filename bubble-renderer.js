@@ -1,107 +1,112 @@
 // bubble-renderer.js
-// Responsible for rendering chat bubbles, avatars, timestamps, grouping
+const commentsContainer = document.getElementById("tg-comments-container");
 
-const tgContainer = document.getElementById("tg-comments-container");
-
-// Utility: format timestamp
-function formatTimestamp(date) {
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-  const ampm = hours >= 12 ? "PM" : "AM";
-  const h = hours % 12 || 12;
-  const m = minutes < 10 ? "0" + minutes : minutes;
-  return `${h}:${m} ${ampm}`;
-}
-
-// Utility: create avatar element
-function createAvatar(user) {
-  const avatar = document.createElement("img");
-  avatar.className = "tg-avatar";
-  avatar.src = user.avatar || `assets/first-letter/${user.name[0].toUpperCase()}.jpg`;
-  avatar.alt = user.name;
-  return avatar;
-}
-
-// Utility: create bubble
-function createBubble(message, isAdmin = false, showAvatar = true) {
-  const wrapper = document.createElement("div");
-  wrapper.className = `tg-bubble-wrapper ${isAdmin ? "tg-admin" : "tg-member"}`;
-
-  if (showAvatar) {
-    wrapper.appendChild(createAvatar(message.user));
-  }
-
+/**
+ * Creates a chat bubble
+ * @param {Object} message - message object
+ * message = {
+ *   id: string,
+ *   sender: string,
+ *   avatar: string,  // URL
+ *   text: string,
+ *   timestamp: Date,
+ *   isAdmin: boolean
+ * }
+ */
+function createBubble(message) {
   const bubble = document.createElement("div");
-  bubble.className = "tg-bubble";
+  bubble.classList.add("tg-bubble");
+  bubble.classList.toggle("tg-bubble-admin", message.isAdmin);
+  bubble.dataset.id = message.id;
+
+  // Avatar
+  const avatar = document.createElement("img");
+  avatar.classList.add("tg-bubble-avatar");
+  avatar.src = message.avatar;
+  avatar.alt = `${message.sender} avatar`;
+
+  // Content
+  const content = document.createElement("div");
+  content.classList.add("tg-bubble-content");
+
+  // Sender
+  const sender = document.createElement("div");
+  sender.classList.add("tg-bubble-sender");
+  sender.textContent = message.sender;
 
   // Message text
   const text = document.createElement("div");
-  text.className = "tg-text";
+  text.classList.add("tg-bubble-text");
   text.textContent = message.text;
-  bubble.appendChild(text);
 
   // Timestamp
-  const ts = document.createElement("div");
-  ts.className = "tg-timestamp";
-  ts.textContent = formatTimestamp(new Date(message.timestamp));
-  bubble.appendChild(ts);
+  const timestamp = document.createElement("div");
+  timestamp.classList.add("tg-bubble-timestamp");
+  timestamp.textContent = formatTime(message.timestamp);
 
-  wrapper.appendChild(bubble);
+  // Append
+  content.appendChild(sender);
+  content.appendChild(text);
+  content.appendChild(timestamp);
+  bubble.appendChild(avatar);
+  bubble.appendChild(content);
 
-  return wrapper;
+  return bubble;
 }
 
-// Utility: insert date separator
-function createDateSeparator(date) {
-  const separator = document.createElement("div");
-  separator.className = "tg-date-separator";
-  separator.textContent = date.toDateString();
-  return separator;
+// Format time similar to Telegram style (HH:MM)
+function formatTime(date) {
+  const d = new Date(date);
+  const hours = d.getHours().toString().padStart(2, "0");
+  const minutes = d.getMinutes().toString().padStart(2, "0");
+  return `${hours}:${minutes}`;
 }
 
-// Render messages array
-function renderMessages(messages) {
-  tgContainer.innerHTML = ""; // Clear first
-  let lastDate = null;
-  let lastUserId = null;
-
-  messages.forEach((msg) => {
-    const msgDate = new Date(msg.timestamp);
-    if (!lastDate || lastDate.toDateString() !== msgDate.toDateString()) {
-      tgContainer.appendChild(createDateSeparator(msgDate));
-      lastDate = msgDate;
-    }
-
-    // Group consecutive messages from same user
-    const showAvatar = msg.user.id !== lastUserId;
-    const bubbleEl = createBubble(msg, msg.user.isAdmin, showAvatar);
-    tgContainer.appendChild(bubbleEl);
-
-    lastUserId = msg.user.id;
+/**
+ * Render messages
+ * @param {Array} messages - array of message objects
+ */
+function renderBubbles(messages) {
+  messages.forEach(msg => {
+    const bubble = createBubble(msg);
+    commentsContainer.appendChild(bubble);
   });
 
-  // Scroll to bottom
-  tgContainer.scrollTop = tgContainer.scrollHeight;
+  // Scroll to bottom after rendering
+  commentsContainer.scrollTop = commentsContainer.scrollHeight;
 }
 
-// Simulate adding new message
-function appendMessage(msg) {
-  const msgDate = new Date(msg.timestamp);
-  const lastChild = tgContainer.lastElementChild;
-  if (!lastChild || lastChild.className === "tg-date-separator" || lastChild.dataset.date !== msgDate.toDateString()) {
-    tgContainer.appendChild(createDateSeparator(msgDate));
+// Example usage with historical + live messages
+const demoMessages = [
+  {
+    id: "1",
+    sender: "Admin",
+    avatar: "assets/admin.jpg",
+    text: "Welcome to Profit Hunters Chat! 📌",
+    timestamp: new Date("2026-02-14T10:00:00"),
+    isAdmin: true
+  },
+  {
+    id: "2",
+    sender: "Alice",
+    avatar: "assets/member1.jpg",
+    text: "Excited to join the group!",
+    timestamp: new Date("2026-02-14T10:02:00"),
+    isAdmin: false
+  },
+  {
+    id: "3",
+    sender: "Bob",
+    avatar: "assets/member2.jpg",
+    text: "Hello everyone!",
+    timestamp: new Date("2026-02-14T10:05:00"),
+    isAdmin: false
   }
-  const showAvatar = lastChild && lastChild.dataset.user !== msg.user.id;
-  const bubbleEl = createBubble(msg, msg.user.isAdmin, showAvatar);
-  bubbleEl.dataset.user = msg.user.id;
-  bubbleEl.dataset.date = msgDate.toDateString();
-  tgContainer.appendChild(bubbleEl);
+];
 
-  tgContainer.scrollTop = tgContainer.scrollHeight;
-}
+// Initial render
+renderBubbles(demoMessages);
 
-// Export functions for realism engine
-window.tgRender = {
-  renderMessages,
-  appendMessage,
-};
+// Export for other modules
+window.renderBubbles = renderBubbles;
+window.createBubble = createBubble;
