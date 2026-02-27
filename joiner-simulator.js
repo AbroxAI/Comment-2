@@ -1,217 +1,108 @@
-// joiner-simulator.js — Telegram 2026 fully compatible with identity-personas v7
-(function () {
-  const DEFAULTS = {
-    minIntervalMs: 1000 * 60 * 60 * 6, // 6h
-    maxIntervalMs: 1000 * 60 * 60 * 24, // 24h
-    burstMin: 1,
-    burstMax: 6,
-    welcomeAsSystem: true,
-    stickerMaxAvatars: 8,
-    stickerAvatarSize: 36,
-    stickerOverlap: 12,
-    initialBurstPreview: 3
-  };
+// joiner-simulator.js — Realistic Joiner Engine
+// ============================================
+// Simulates new members joining with bursts, welcome messages, and join stickers.
+// Works with BubbleRenderer and identity-personas.
 
-  const cfg = Object.assign({}, DEFAULTS, window.JOINER_CONFIG || {});
-  let running = false;
-  let _timer = null;
-  const usedJoinNames = new Set();
-  let preGenPool = [];
+(function(){
+  const MIN_INTERVAL = (window.JOINER_CONFIG?.minIntervalMs) || 1000*60*60*6;
+  const MAX_INTERVAL = (window.JOINER_CONFIG?.maxIntervalMs) || 1000*60*60*24;
+  const INITIAL_JOINS = window.JOINER_CONFIG?.initialJoins || 3;
+  const WELCOME_MESSAGE = window.JOINER_CONFIG?.welcomeMessage || "Welcome! Please use Contact Admin to verify.";
 
-  const WELCOME_TEXT_POOL = window.WELCOME_TEXT_POOL || [
-    "Hi everyone! 👋",
-    "Hello! Glad to join.",
-    "Hey — excited to learn and trade with you all.",
-    "New here — say hi!",
-    "Thanks for having me 😊",
-    "Just joined, looking forward to the signals.",
-    "Excited to be here 🙌",
-    "Looking forward to contributing 🚀",
-    "Happy to join the group 💡"
-  ];
+  const SyntheticPool = window.identity?.SyntheticPool || [];
+  const Admin = window.identity?.Admin;
 
-  function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
-  function random(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-  function safeMeta() { return document.getElementById("tg-meta-line"); }
+  const tgContainer = document.getElementById("tg-comments-container");
+  const tgMetaLine = document.getElementById("tg-meta-line");
 
-  function bumpMemberCount(n = 1) {
-    window.MEMBER_COUNT = Math.max(0, (window.MEMBER_COUNT || 0) + n);
-    const m = safeMeta();
-    if (m) m.textContent = `${(window.MEMBER_COUNT || 0).toLocaleString()} members, ${(window.ONLINE_COUNT || 0).toLocaleString()} online`;
+  // Track members
+  let memberCount = window.MEMBER_COUNT || 0;
+  let onlineCount = window.ONLINE_COUNT || 0;
+
+  function incrementMetaLine(count=1){
+    memberCount += count;
+    if(tgMetaLine) tgMetaLine.textContent = `${memberCount.toLocaleString()} members, ${onlineCount.toLocaleString()} online`;
   }
 
-  function safeBuildAvatar(name) {
-    try {
-      if (window.identity && typeof window.identity.buildUniqueAvatar === "function") {
-        return window.identity.buildUniqueAvatar(name);
-      }
-    } catch (e) {}
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "U")}&size=256&background=random`;
-  }
-
-  function uniqueNameCandidate(base) {
-    let candidate = base;
-    let guard = 0;
-    while (usedJoinNames.has(candidate) && guard < 12) {
-      candidate = `${base}_${Math.floor(Math.random() * 9999)}`;
-      guard++;
-    }
-    usedJoinNames.add(candidate);
-    return candidate;
-  }
-
-  function createJoinerFromIdentity() {
-    let p;
-    if (window.identity?.getRandomPersona) {
-      const raw = window.identity.getRandomPersona();
-      p = Object.assign({}, raw);
-      p.name = uniqueNameCandidate(String(p.name || ("User" + randInt(1000, 9999))));
-      if (!p.avatar || String(p.avatar).toLowerCase().includes("admin")) {
-        p.avatar = safeBuildAvatar(p.name);
-      }
-      p.isAdmin = !!p.isAdmin;
-    } else {
-      const fName = uniqueNameCandidate("NewMember" + randInt(1000, 99999));
-      p = { name: fName, avatar: safeBuildAvatar(fName), isAdmin: false };
-    }
-    document.dispatchEvent(new CustomEvent("joiner:new", { detail: p }));
-    return p;
-  }
-
-  function preGenerate(count) {
-    preGenPool = preGenPool || [];
-    const toCreate = Math.max(0, Math.min(2000, count - preGenPool.length));
-    for (let i = 0; i < toCreate; i++) preGenPool.push(createJoinerFromIdentity());
-    return preGenPool.length;
-  }
-
-  function nextJoiner() {
-    return preGenPool && preGenPool.length ? preGenPool.shift() : createJoinerFromIdentity();
-  }
-
-  function randomWelcomeText() {
-    return random(WELCOME_TEXT_POOL);
-  }
-
-  function postWelcomeAsBubbles(joiner) {
-    const persona = joiner;
-    const text = randomWelcomeText(joiner);
-
-    if (window.TGRenderer?.showTyping) {
-      window.TGRenderer.showTyping(persona, 700 + Math.random() * 500);
-    }
-
-    setTimeout(() => {
-      if (window.TGRenderer?.appendMessage) {
-        window.TGRenderer.appendMessage(persona, text, { type: "incoming" });
-      }
-    }, 700 + Math.random() * 500);
-  }
-
-  function createJoinStickerElement(joiners) {
-    const container = document.createElement("div");
-    container.className = "tg-join-sticker";
+  function createJoinSticker(joiners){
+    const sticker = document.createElement("div");
+    sticker.className = "tg-join-sticker";
 
     const cluster = document.createElement("div");
     cluster.className = "join-cluster";
 
-    const maxAv = Math.min(cfg.stickerMaxAvatars, joiners.length);
-    const shown = joiners.slice(0, maxAv);
-
-    shown.forEach(p => {
-      const a = document.createElement("img");
-      a.src = p.avatar || safeBuildAvatar(p.name);
-      a.alt = p.name || "user";
-      a.className = "join-avatar";
-      a.width = cfg.stickerAvatarSize;
-      a.height = cfg.stickerAvatarSize;
-      a.onerror = () => { a.src = safeBuildAvatar(p.name); };
-      cluster.appendChild(a);
+    joiners.forEach((p,i)=>{
+      const av = document.createElement("img");
+      av.className = "join-avatar";
+      av.src = p.avatar;
+      av.title = p.name;
+      av.style.zIndex = 50-i;
+      cluster.appendChild(av);
     });
 
-    if (joiners.length > shown.length) {
+    if(joiners.length>5){
       const more = document.createElement("div");
       more.className = "join-more";
-      more.textContent = `+${joiners.length - shown.length}`;
-      more.style.width = cfg.stickerAvatarSize + "px";
-      more.style.height = cfg.stickerAvatarSize + "px";
+      more.textContent = "+" + (joiners.length-5);
       cluster.appendChild(more);
     }
 
-    container.appendChild(cluster);
+    sticker.appendChild(cluster);
 
-    const names = document.createElement("div");
-    names.className = "join-names";
-    names.textContent = shown.map(p => p.name).join(", ") +
-      (joiners.length > shown.length ? ` and ${joiners.length - shown.length} others` : "");
-    container.appendChild(names);
+    const text = document.createElement("div");
+    text.textContent = joiners.map(j=>j.name).join(", ") + " joined the chat";
+    sticker.appendChild(text);
 
-    const sub = document.createElement("div");
-    sub.className = "join-sub";
-    sub.textContent = "joined the group";
-    container.appendChild(sub);
-
-    return container;
+    tgContainer.appendChild(sticker);
+    tgContainer.scrollTop = tgContainer.scrollHeight;
   }
 
-  function postJoinerFlow(joiners) {
-    bumpMemberCount(joiners.length || 1);
+  function sendWelcomeMessage(persona){
+    const bubble = document.createElement("div");
+    bubble.className = "tg-bubble incoming";
 
-    const chat = document.getElementById("tg-comments-container");
+    const avatar = document.createElement("img");
+    avatar.className = "tg-bubble-avatar";
+    avatar.src = Admin.avatar;
+    bubble.appendChild(avatar);
 
-    if ((joiners.length || 1) > 2 && chat) {
-      const stickerEl = createJoinStickerElement(joiners);
-      chat.appendChild(stickerEl);
-      joiners.slice(0, cfg.initialBurstPreview).forEach(postWelcomeAsBubbles);
-    } else {
-      joiners.forEach(postWelcomeAsBubbles);
+    const content = document.createElement("div");
+    content.className = "tg-bubble-content glass-btn";
+    content.textContent = `${WELCOME_MESSAGE} — ${persona.name}`;
+    bubble.appendChild(content);
+
+    tgContainer.appendChild(bubble);
+    tgContainer.scrollTop = tgContainer.scrollHeight;
+  }
+
+  function simulateJoin(){
+    if(!SyntheticPool.length) return;
+    const batchSize = Math.floor(Math.random()*3)+1;
+    const joiners = [];
+    for(let i=0;i<batchSize;i++){
+      const p = SyntheticPool[Math.floor(Math.random()*SyntheticPool.length)];
+      joiners.push(p);
     }
+
+    createJoinSticker(joiners);
+    joiners.forEach(p=>sendWelcomeMessage(p));
+    incrementMetaLine(joiners.length);
+
+    scheduleNextJoin();
   }
 
-  function scheduleNext() {
-    if (!running) return;
-    const min = Math.max(1000, cfg.minIntervalMs);
-    const max = Math.max(min + 1, cfg.maxIntervalMs);
-    const next = Math.floor(min + Math.random() * (max - min));
-    _timer = setTimeout(() => {
-      const burst = randInt(cfg.burstMin, cfg.burstMax);
-      const joiners = [];
-      for (let i = 0; i < burst; i++) joiners.push(nextJoiner());
-      postJoinerFlow(joiners);
-      scheduleNext();
-    }, next);
+  function scheduleNextJoin(){
+    const delay = MIN_INTERVAL + Math.random()*(MAX_INTERVAL-MIN_INTERVAL);
+    setTimeout(simulateJoin, delay);
   }
 
-  function start() {
-    if (running) return;
-    running = true;
-    preGenerate(Math.max(cfg.initialBurstPreview, 6));
-    scheduleNext();
+  // Initial joins
+  for(let i=0;i<INITIAL_JOINS;i++){
+    setTimeout(simulateJoin, i*500);
   }
 
-  function stop() {
-    if (_timer) clearTimeout(_timer);
-    running = false;
-  }
+  // Start continuous joins
+  scheduleNextJoin();
 
-  function joinNow(n) {
-    n = Math.max(1, n || 1);
-    const CHUNK = 40;
-    let done = 0;
-    function doChunk() {
-      const take = Math.min(CHUNK, n - done);
-      const arr = [];
-      for (let i = 0; i < take; i++) arr.push(nextJoiner());
-      postJoinerFlow(arr);
-      done += take;
-      if (done < n) setTimeout(doChunk, 120);
-    }
-    doChunk();
-  }
-
-  window.joiner = window.joiner || {};
-  Object.assign(window.joiner, { start, stop, joinNow, preGenerate, config: cfg });
-
-  // fire initial burst
-  setTimeout(() => joinNow(cfg.initialBurstPreview || 3), 500);
+  console.log("joiner-simulator initialized — min/max interval:",MIN_INTERVAL,"/",MAX_INTERVAL);
 })();
