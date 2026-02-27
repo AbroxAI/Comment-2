@@ -1,83 +1,119 @@
-// bubble-renderer.js — modular Telegram-style message rendering
+// bubble-renderer.js — Full Telegram 2026 bubble renderer
 
-document.addEventListener("DOMContentLoaded", () => {
+(function () {
   const container = document.getElementById("tg-comments-container");
+  if (!container) {
+    console.error("bubble-renderer.js: tg-comments-container missing");
+    return;
+  }
 
-  if (!container) return;
+  const MESSAGE_MAP = new Map();
+  const DATE_FORMAT = { weekday: "short", month: "short", day: "numeric" };
 
-  // Helper: create a single bubble
-  function createBubble({ sender, text, type = "incoming", time = "", viewers = 0, avatar }) {
+  function createAvatar(persona) {
+    const img = document.createElement("img");
+    img.className = "tg-bubble-avatar";
+    img.src = persona.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(persona.name)}&size=256&background=random`;
+    img.alt = persona.name || "user";
+    img.onerror = () => {
+      img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(persona.name || "U")}&size=256&background=random`;
+    };
+    return img;
+  }
+
+  function formatDateSticker(date) {
+    return new Intl.DateTimeFormat("en-US", DATE_FORMAT).format(date);
+  }
+
+  function appendDateStickerIfNeeded(date) {
+    const lastSticker = container.querySelector(".tg-date-sticker:last-of-type");
+    const formatted = formatDateSticker(date);
+    if (!lastSticker || lastSticker.textContent !== formatted) {
+      const sticker = document.createElement("div");
+      sticker.className = "tg-date-sticker";
+      sticker.textContent = formatted;
+      container.appendChild(sticker);
+    }
+  }
+
+  function createBubble(persona, text, opts = {}) {
     const bubble = document.createElement("div");
-    bubble.className = `tg-bubble ${type}`;
+    bubble.className = `tg-bubble ${opts.type || "incoming"}`;
+    bubble.dataset.id = opts.id || `msg_${Date.now()}_${Math.floor(Math.random()*9999)}`;
 
     // Avatar
-    const avatarEl = document.createElement("img");
-    avatarEl.className = "tg-bubble-avatar";
-    avatarEl.src = avatar || "assets/default-avatar.jpg";
-    avatarEl.alt = sender;
+    const avatarEl = createAvatar(persona);
     bubble.appendChild(avatarEl);
 
-    // Content wrapper
+    // Content
     const content = document.createElement("div");
     content.className = "tg-bubble-content";
 
-    // Sender name
-    const senderEl = document.createElement("div");
-    senderEl.className = "tg-bubble-sender";
-    senderEl.textContent = sender;
-    content.appendChild(senderEl);
-
-    // Message text
-    const textEl = document.createElement("div");
-    textEl.className = "tg-bubble-text";
-    textEl.textContent = text;
-    content.appendChild(textEl);
-
-    // Meta (time + viewers)
-    const metaEl = document.createElement("div");
-    metaEl.className = "tg-bubble-meta";
-
-    if(time){
-      const timeEl = document.createElement("span");
-      timeEl.textContent = time;
-      metaEl.appendChild(timeEl);
+    if (opts.replyToText) {
+      const replyPreview = document.createElement("div");
+      replyPreview.className = "tg-bubble-reply";
+      replyPreview.textContent = opts.replyToText;
+      replyPreview.addEventListener("click", () => {
+        const target = Array.from(container.querySelectorAll(".tg-bubble"))
+          .find(b => b.dataset.id === opts.replyToId);
+        if (target) {
+          target.scrollIntoView({ behavior: "smooth", block: "center" });
+          target.classList.add("tg-highlight");
+          setTimeout(() => target.classList.remove("tg-highlight"), 2600);
+        }
+      });
+      content.appendChild(replyPreview);
     }
 
-    if(viewers){
-      const viewersEl = document.createElement("div");
-      viewersEl.className = "tg-bubble-viewers";
-      viewersEl.textContent = `${viewers} views`;
-      metaEl.appendChild(viewersEl);
+    const textNode = document.createElement("span");
+    textNode.className = "tg-bubble-text";
+    textNode.textContent = text;
+    content.appendChild(textNode);
+
+    // Optional image
+    if (opts.image) {
+      const imgEl = document.createElement("img");
+      imgEl.src = opts.image;
+      imgEl.style.width = "100%";
+      imgEl.style.borderRadius = "12px";
+      imgEl.style.marginTop = "6px";
+      content.appendChild(imgEl);
     }
 
-    content.appendChild(metaEl);
+    // Optional caption / admin glass
+    if (opts.caption) {
+      const captionEl = document.createElement("div");
+      captionEl.className = "glass-btn";
+      captionEl.textContent = opts.caption;
+      content.appendChild(captionEl);
+    }
 
     bubble.appendChild(content);
+
+    if (opts.timestamp) appendDateStickerIfNeeded(opts.timestamp);
+
+    MESSAGE_MAP.set(bubble.dataset.id, bubble);
     return bubble;
   }
 
-  // Append a message to container
-  function appendMessage(messageData) {
-    const bubble = createBubble(messageData);
+  function appendMessage(persona, text, opts = {}) {
+    const bubble = createBubble(persona, text, opts);
     container.appendChild(bubble);
-    container.scrollTop = container.scrollHeight; // auto-scroll
+
+    // Smooth scroll to bottom if near bottom
+    const atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 50;
+    if (atBottom) {
+      bubble.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
+
+    return bubble.dataset.id;
   }
 
-  // Expose globally for app.js to call
-  window.TGRenderer = {
-    appendMessage
-  };
-
-  // Example: listen to sendMessage event from interactions.js
-  document.addEventListener("sendMessage", (e) => {
-    const text = e.detail;
-    appendMessage({
-      sender: "You",
-      text,
-      type: "outgoing",
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      viewers: 0,
-      avatar: "assets/my-avatar.jpg"
-    });
+  // Expose API
+  window.TGRenderer = window.TGRenderer || {};
+  Object.assign(window.TGRenderer, {
+    appendMessage,
+    createBubble
   });
-});
+
+})();
