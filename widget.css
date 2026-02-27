@@ -1,303 +1,312 @@
-/* ===================================== */
-/* TELEGRAM DARK THEME - WIDGET.CSS     */
-/* ===================================== */
+/* widget.css — tweaked for proper avatars, pin banner, bubbles, input bar */
 
-/* === VARIABLES === */
-:root{
-  --tg-bg-main: #0e1621;
-  --tg-bg-gradient: linear-gradient(180deg,#0e1621 0%,#17212b 100%);
-  --tg-text: #e6eef8;
-  --tg-muted: #9aa7bd;
-
-  --tg-header-bg: #17212b;
-  --tg-header-height: 56px;
-  --tg-avatar-size: 36px;
-  --tg-title-font: 16px;
-  --tg-meta-font: 12px;
-
-  --tg-bubble-in: #182533;
-  --tg-bubble-out: #2b5278;
-
-  --tg-input-height: 44px;
-  --tg-input-radius: 22px;
-  --tg-input-bg: #17212b;
-  --tg-input-field: #0e1621;
-  --tg-accent: #2ea6ff;
-
-  --tg-icon-size: 20px;
-  --tg-gap: 10px;
+/* ===========================
+   GLOBAL STYLES
+=========================== */
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  background: #171f2b;
+  color: #e0e0e0;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
-/* ===================================== */
-/* BASE LAYOUT */
-/* ===================================== */
-* { box-sizing: border-box; }
-html, body { height:100dvh; margin:0; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; -webkit-font-smoothing: antialiased; }
-.hidden { display: none !important; }
-
-#tg-comments-app{
+#tg-comments-app {
   display: flex;
   flex-direction: column;
-  height: 100dvh;
-  background: var(--tg-bg-gradient);
-  color: var(--tg-text);
-  overflow: hidden;
+  height: 100vh;
+  width: 100%;
+  position: relative;
 }
 
-/* ===================================== */
-/* HEADER */
-/* ===================================== */
-.tg-header{
+/* ===========================
+   HEADER
+=========================== */
+.tg-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: var(--tg-header-height);
-  padding: 0 14px;
-  background: var(--tg-header-bg);
-  position: sticky;
-  top: 0;
-  z-index: 30;
+  padding: 10px 14px;
+  background: #1f2937;
+  color: #fff;
+  position: relative;
+  z-index: 10;
+  border-bottom: 1px solid #2e3a4a;
 }
 
-.tg-back-btn, .tg-options-btn{
-  width: 40px; height: 40px;
-  display: flex; align-items: center; justify-content: center;
-  background: none; border: none; cursor: pointer;
-  color: var(--tg-text);
-  font-size: var(--tg-icon-size);
-}
-
-.tg-header-center{
-  display: flex;
-  align-items: center;
-  gap: var(--tg-gap);
-  flex: 1;
-  margin: 0 12px;
-  min-width: 0;
-}
-
-.tg-header-avatar{
-  width: var(--tg-avatar-size); height: var(--tg-avatar-size);
-  border-radius: 50%; object-fit: cover; flex-shrink: 0;
-}
-
-.tg-header-info{
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-width: 0;
-}
-
-.tg-title{
-  font-size: var(--tg-title-font);
-  font-weight: 500;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: var(--tg-text);
-}
-
-.tg-meta{
-  font-size: var(--tg-meta-font);
-  color: var(--tg-muted);
-  margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* ===================================== */
-/* PIN BANNER - FLOATING PILL */
-/* ===================================== */
-.tg-pin-banner{
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 12px;
-  background: #1f2c3a;
-  color: var(--tg-text);
-  border-radius: 22px;
-  font-size: 13px;
-  position: sticky;
-  top: var(--tg-header-height);
-  z-index: 25;
-}
-
-.tg-pin-banner.hidden{ display: none !important; }
-
-/* ===================================== */
-/* COMMENTS CONTAINER */
-/* ===================================== */
-.tg-comments-container{
-  flex: 1 1 auto;
-  padding: 12px;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Ensure last bubble not covered by input */
-.tg-comments-container::after{
-  content: "";
-  display: block;
-  height: calc(var(--tg-input-height) + 16px);
-}
-
-/* ===================================== */
-/* MESSAGE BUBBLES */
-/* ===================================== */
-.tg-bubble{
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  margin-bottom: 14px;
-  max-width: 75%;
-}
-
-.tg-bubble.incoming{
-  justify-content: flex-start;
-}
-
-.tg-bubble.outgoing{
-  flex-direction: row-reverse;
-  margin-left: auto;
-}
-
-.tg-bubble-avatar{
-  width: 34px;
-  height: 34px;
+.tg-header-avatar {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  flex-shrink: 0;
-  margin-top: 2px;
 }
 
-.tg-bubble-content{
-  padding: 8px 12px;
-  border-radius: 14px;
-  font-size: 14px;
-  line-height: 1.4;
+.tg-header-center {
+  display: flex;
+  align-items: center;
+}
+
+.tg-header-info {
+  margin-left: 8px;
+}
+
+.tg-title {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.tg-meta {
+  font-size: 0.8rem;
+  color: #a0a0a0;
+}
+
+/* ===========================
+   PIN BANNER
+=========================== */
+.tg-pin-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 14px;
+  background: linear-gradient(180deg, #2c3a50 0%, #1b2735 100%);
+  border-radius: 12px;
+  margin: 6px 14px;
+  overflow: hidden;
+  transition: all 0.35s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tg-pin-banner.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.tg-pin-banner img {
+  width: 100%;
+  max-height: 160px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+
+.pin-text {
+  font-weight: 500;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.pin-btn-container {
+  display: flex;
+  gap: 8px;
+}
+
+.pin-btn, .glass-btn {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 500;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border: none;
+}
+
+.pin-btn {
+  background: #2563eb;
+  color: #fff;
+}
+
+.glass-btn {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  backdrop-filter: blur(10px);
+}
+
+/* ===========================
+   CHAT CONTAINER
+=========================== */
+.tg-comments-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ===========================
+   MESSAGE BUBBLES
+=========================== */
+.tg-bubble {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: 80%;
   word-break: break-word;
   position: relative;
 }
 
-.tg-bubble.incoming .tg-bubble-content{
-  background: var(--tg-bubble-in);
+.tg-bubble.incoming {
+  flex-direction: row;
 }
 
-.tg-bubble.outgoing .tg-bubble-content{
-  background: var(--tg-bubble-out);
+.tg-bubble.outgoing {
+  flex-direction: row-reverse;
+  margin-left: auto;
 }
 
-.tg-bubble-sender{
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 2px;
-  color: var(--tg-text);
-}
-
-.tg-bubble-meta{
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 4px;
-  font-size: 11px;
-  color: var(--tg-muted);
-}
-
-.tg-bubble-viewers{
-  display: flex;
-  align-items: center;
-  gap: 3px;
-}
-
-/* ===================================== */
-/* INPUT AREA - FLOATING PILL */
-/* ===================================== */
-.tg-input-wrapper{
-  padding: 8px 12px;
-  background: transparent;
-  position: sticky;
-  bottom: 8px;
-  z-index: 50;
-  display: flex;
-  justify-content: center;
-}
-
-.tg-input-bar{
-  display: flex; align-items: center; gap: 8px;
-  width: 100%;
-  max-width: 600px;
-  height: var(--tg-input-height);
-  border-radius: var(--tg-input-radius);
-  background: var(--tg-input-bg);
-  padding: 0 12px;
-}
-
-.tg-comment-input{
-  flex: 1;
-  height: 100%;
-  border-radius: var(--tg-input-radius);
-  border: none;
-  padding: 0 12px;
-  background: var(--tg-input-field);
-  color: var(--tg-text);
-  font-size: 14px;
-  outline: none;
-}
-
-.tg-comment-input::placeholder{
-  color: var(--tg-muted);
-}
-
-.tg-send-btn{
+.tg-bubble-avatar {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: var(--tg-accent);
-  color: #fff;
-  border: none;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  object-fit: cover;
+  flex-shrink: 0;
 }
 
-.tg-icon-btn{
-  background: none;
-  border: none;
-  padding: 6px;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--tg-muted);
-}
-
-/* ===================================== */
-/* NEW MESSAGE JUMP PILL */
-/* ===================================== */
-#tg-jump-indicator{
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: calc(var(--tg-input-height) + 64px);
-  background: var(--tg-accent);
-  color: #fff;
-  padding: 6px 12px;
+.tg-bubble-content {
+  background: #1f2937;
+  padding: 8px 12px;
   border-radius: 18px;
-  font-size: 13px;
+  color: #e0e0e0;
+  font-size: 0.9rem;
+  position: relative;
+}
+
+.tg-bubble.incoming .tg-bubble-content {
+  border-top-left-radius: 4px;
+}
+
+.tg-bubble.outgoing .tg-bubble-content {
+  background: #2563eb;
+  color: #fff;
+  border-top-right-radius: 4px;
+}
+
+.tg-bubble .tg-bubble-text {
+  display: block;
+}
+
+.tg-bubble .tg-bubble-reply {
+  font-size: 0.75rem;
+  color: #a0a0a0;
+  margin-bottom: 4px;
+  cursor: pointer;
+}
+
+/* ===========================
+   JOIN STICKERS
+=========================== */
+.tg-join-sticker {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: #1f2937;
+  padding: 6px 8px;
+  border-radius: 14px;
+  max-width: 100%;
+}
+
+.join-cluster {
+  display: flex;
+  position: relative;
+}
+
+.join-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #171f2b;
+  margin-left: -12px;
+  background: #2c3a50;
+  flex-shrink: 0;
+}
+
+.join-more {
   display: flex;
   align-items: center;
-  gap: 8px;
-  box-shadow: 0 6px 18px rgba(0,0,0,.12);
-  z-index: 999;
+  justify-content: center;
+  background: #2563eb;
+  color: #fff;
+  font-size: 0.75rem;
+  border-radius: 50%;
+  margin-left: -12px;
 }
 
-#tg-jump-indicator.hidden{ display: none; }
-
-/* ===================================== */
-/* RESPONSIVE */
-@media (max-width: 520px){
-  :root{ --tg-avatar-size: 34px; }
-  .tg-header{ padding: 0 10px; }
-  .tg-header-center{ gap: 8px; margin: 0 8px; }
-  .tg-bubble{ max-width: 85%; margin: 6px 10px; }
-  #tg-jump-indicator{ bottom: calc(var(--tg-input-height) + 56px); padding: 5px 10px; }
-  .tg-input-bar{ max-width: 100%; }
+/* ===========================
+   INPUT BAR
+=========================== */
+.tg-input-wrapper {
+  padding: 6px 12px;
+  background: transparent;
 }
+
+.tg-input-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(23,33,43,0.78);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: 26px;
+  padding: 4px 8px;
+}
+
+.tg-comment-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.tg-icon-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+}
+
+.tg-send-btn {
+  background: #2563eb;
+  color: #fff;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===========================
+   NEW MESSAGE PILL
+=========================== */
+#tg-new-pill {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #2563eb;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+/* ===========================
+   DATE STICKERS
+=========================== */
+.tg-date-sticker {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #a0a0a0;
+  margin: 10px 0;
+}
+
+/* ===========================
+   MISC
+=========================== */
+.hidden { display: none !important; }
